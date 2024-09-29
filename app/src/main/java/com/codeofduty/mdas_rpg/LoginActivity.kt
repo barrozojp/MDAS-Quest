@@ -1,6 +1,7 @@
 package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.content.ContextCompat
@@ -42,6 +43,14 @@ class LoginActivity : AppCompatActivity() {
             binding.btnLogin.backgroundTintList =
                 ContextCompat.getColorStateList(this, if (isValid) R.color.enabled_button_color else android.R.color.darker_gray)
         }
+
+        // Login button click event
+        binding.btnLogin.setOnClickListener {
+            // Navigate to MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
 
         binding.backTv.setOnClickListener {
             finish() // or implement any navigation logic if needed
