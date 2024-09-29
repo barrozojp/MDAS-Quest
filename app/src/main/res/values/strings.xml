@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MDAS Quest</string>
+    <string name="mdas_rpg_title">MDAS Quest</string>
+    <string name="login_btn_LoginRegister">L o g i n</string>
+    <string name="register_btn_LoginRegister">R e g i s t e r</string>
+    <string name="login_to_app_tv">Login to App</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+</resources>
