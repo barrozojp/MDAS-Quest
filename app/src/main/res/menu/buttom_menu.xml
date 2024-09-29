@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+
     <item
         android:id="@+id/bottom_home"
+        android:title="Home"
+
+        android:icon="@drawable/baseline_home_filled_24" />
+    <item
+        android:id="@+id/bottom_leaderboard"
+        android:title="Leaderboard"
+        android:icon="@drawable/baseline_signal_cellular_alt_24"/>
+
+    <item
+        android:id="@+id/bottom_notepad"
         android:title="Note Pad"
         android:icon="@drawable/baseline_event_note_24"
         />
 
     <item
-        android:id="@+id/bottom_bookings_dr"
-        android:title="Leaderboard"
-        android:icon="@drawable/baseline_signal_cellular_alt_24"/>
-
-    <item
-        android:id="@+id/bottom_patients_dr"
-        android:title="Home"
-        android:icon="@drawable/baseline_home_filled_24" />
-
-    <item
-        android:id="@+id/bottom_rejected"
+        android:id="@+id/bottom_settings"
         android:title="Settings"
         android:icon="@drawable/baseline_settings_24"/>
 

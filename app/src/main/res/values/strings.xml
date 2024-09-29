@@ -6,4 +6,6 @@
     <string name="login_to_app_tv">Login to App</string>
     <string name="username_hint">Username</string>
     <string name="password_hint">Password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
