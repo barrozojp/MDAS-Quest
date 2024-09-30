@@ -13,9 +13,19 @@
         android:theme="@style/Theme.MDASRPG"
         tools:targetApi="31">
         <activity
+            android:name=".HardDivision"
+            android:exported="false" />
+        <activity
+            android:name=".MediumDivision"
+            android:exported="false" />
+        <activity
+            android:name=".EasyDivision"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+        <activity
             android:name=".HardMultiplication"
             android:exported="false"
-            android:windowSoftInputMode="stateVisible|adjustResize"/>
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
             android:name=".MediumMultiplication"
             android:exported="false"

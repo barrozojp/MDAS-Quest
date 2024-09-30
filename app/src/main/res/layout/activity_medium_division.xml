@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_design"
-    tools:context=".MediumMultiplication">
+    tools:context=".MediumDivision">
 
     <TextView
         android:id="@+id/heart_counter"
@@ -91,7 +91,7 @@
         android:layout_marginEnd="0dp"
         android:fontFamily="@font/super_moods"
         android:padding="25dp"
-        android:text="x"
+        android:text="/"
         android:textAlignment="center"
         android:textColor="#000"
         android:textSize="30sp" />

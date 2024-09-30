@@ -20,13 +20,23 @@ class HomeFragment : Fragment() {
 
         // Find the multiplication button
         val multiplicationBtn = view.findViewById<Button>(R.id.btn_multiplication)
-
         // Set OnClickListener for the multiplication button
         multiplicationBtn.setOnClickListener {
             // Navigate to the MultiplicationFragment
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, MultipicationFragment())
-                .addToBackStack(null)  // Adds the transaction to the back stack
+                .addToBackStack(null) // Adds the transaction to the back stack
+                .commit()
+        }
+
+        // Find the division button
+        val divisionBtn = view.findViewById<Button>(R.id.btn_division)
+        // Set OnClickListener for the multiplication button
+        divisionBtn.setOnClickListener {
+            // Navigate to the MultiplicationFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, DivisionFragment())
+                .addToBackStack(null)
                 .commit()
         }
 

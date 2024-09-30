@@ -129,13 +129,13 @@ class MediumMultiplication : AppCompatActivity() {
 
         // Enable/disable the button based on text input
         answerStream.subscribe { isValid ->
-            binding.btnLogin.isEnabled = isValid
-            binding.btnLogin.backgroundTintList =
+            binding.btnSubmit.isEnabled = isValid
+            binding.btnSubmit.backgroundTintList =
                 ContextCompat.getColorStateList(this, if (isValid) R.color.enabled_button_color else android.R.color.darker_gray)
         }
 
         // Submit button click event
-        binding.btnLogin.setOnClickListener {
+        binding.btnSubmit.setOnClickListener {
             handleAnswer()
         }
     }

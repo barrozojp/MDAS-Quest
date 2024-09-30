@@ -14,14 +14,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.codeofduty.mdas_rpg.databinding.ActivityEasyMultiplicationBinding
-import com.codeofduty.mdas_rpg.databinding.ActivityHardMultiplicationBinding
+import com.codeofduty.mdas_rpg.databinding.ActivityEasyDivisionBinding
 import com.jakewharton.rxbinding2.widget.RxTextView
 import kotlin.random.Random
 
 @SuppressLint("CheckResult")
-class HardMultiplication : AppCompatActivity() {
-    private lateinit var binding: ActivityHardMultiplicationBinding
+class EasyDivision : AppCompatActivity() {
+    private lateinit var binding: ActivityEasyDivisionBinding
     private var firstValue: Int = 0
     private var secondValue: Int = 0
     private var wrongAttempts: Int = 0
@@ -35,7 +34,7 @@ class HardMultiplication : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityHardMultiplicationBinding.inflate(layoutInflater)
+        binding = ActivityEasyDivisionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Show the countdown dialog before starting the game
@@ -140,9 +139,11 @@ class HardMultiplication : AppCompatActivity() {
     }
 
     private fun generateQuestion() {
-        // Generate random values between 1 and 10
-        firstValue = Random.nextInt(1, 101)
-        secondValue = Random.nextInt(1, 11)
+        // Generate a random second value between 1 and 5
+        secondValue = Random.nextInt(1, 6)
+
+        // Generate a random first value between 1 and 30 that is divisible by the second value
+        firstValue = (1..20).filter { it % secondValue == 0 }.random()
 
         // Update the UI
         binding.firstValue.text = firstValue.toString()
@@ -152,10 +153,11 @@ class HardMultiplication : AppCompatActivity() {
         binding.etAnswer.text?.clear()
     }
 
+
     private fun handleAnswer() {
         // Get the user's answer from the EditText
         val userAnswer = binding.etAnswer.text.toString().toIntOrNull() // Use toIntOrNull for safety
-        val correctAnswer = firstValue * secondValue
+        val correctAnswer = firstValue / secondValue
 
         // Check if the user's answer is correct
         if (userAnswer == correctAnswer) {
@@ -210,7 +212,6 @@ class HardMultiplication : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
-
 
         dialogView.findViewById<ImageView>(R.id.play_again).setOnClickListener {
             // Restart the game
