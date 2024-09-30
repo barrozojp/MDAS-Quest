@@ -2,9 +2,14 @@ package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.media.AudioAttributes
+import android.media.SoundPool
 import android.os.Bundle
+import android.media.MediaPlayer
 import android.os.Handler
+import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -23,6 +28,9 @@ class EasyMultiplication : AppCompatActivity() {
     private var timerValue: Int = 0 // Timer variable
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
+    private lateinit var soundPool: SoundPool
+    private var tapSoundId: Int = 0
+    private lateinit var backgroundMusic: MediaPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +39,34 @@ class EasyMultiplication : AppCompatActivity() {
 
         // Show the countdown dialog before starting the game
         showCountdownDialog()
+
+        // Set up the SoundPool
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(1)
+            .setAudioAttributes(audioAttributes)
+            .build()
+
+        // Load the tap sound from the raw folder
+        tapSoundId = soundPool.load(this, R.raw.tap_sound, 1)
+
+        // Initialize and start background music
+        backgroundMusic = MediaPlayer.create(this, R.raw.ingame_music)
+        backgroundMusic.isLooping = true // Loop the music
+        backgroundMusic.start() // Start the music
+    }
+
+    // Detect touch events and play the tap sound
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        // Play the tap sound when the user touches the screen
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            soundPool.play(tapSoundId, 1f, 1f, 1, 0, 1f)
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun showCountdownDialog() {
@@ -66,7 +102,6 @@ class EasyMultiplication : AppCompatActivity() {
         handler.postDelayed(countdownRunnable, 1000) // Start countdown
     }
 
-
     private fun startGame() {
         generateQuestion()
 
@@ -76,6 +111,7 @@ class EasyMultiplication : AppCompatActivity() {
         inputMethodManager.showSoftInput(binding.etAnswer, InputMethodManager.SHOW_IMPLICIT) // Show the keyboard
 
         // Initialize the timer
+        timerValue = 0 // Reset timer value
         handler = Handler()
         runnable = Runnable {
             timerValue++
@@ -131,8 +167,8 @@ class EasyMultiplication : AppCompatActivity() {
             binding.heartCounter.text = "${3 - wrongAttempts}"
 
             if (wrongAttempts >= 3) {
-                // Handle game over (e.g., show a message or go to another activity)
-                // You can show a Toast or a dialog here
+                // Show the game over dialog when wrong attempts reach 3
+                showGameOverDialog()
             } else {
                 generateQuestion() // Generate a new question
             }
@@ -140,6 +176,65 @@ class EasyMultiplication : AppCompatActivity() {
 
         // Clear the EditText after processing the answer
         binding.etAnswer.text?.clear() // Clear the answer field
+    }
+
+    private fun showGameOverDialog() {
+        // Inflate the custom layout for the game over dialog
+        val dialogView = layoutInflater.inflate(R.layout.dialog_gameover, null)
+
+        // Find the TextViews to display scores and time (if needed)
+        val totalScoreTextView = dialogView.findViewById<TextView>(R.id.dialog_totalScore)
+        val totalTimeTextView = dialogView.findViewById<TextView>(R.id.dialog_totalTime)
+
+        // Set the total score text
+        totalScoreTextView.text = "Total Score: $score"
+
+        // You can set the total time text if you want
+        val formattedTime = String.format("%02d:%02d", timerValue / 60, timerValue % 60)
+        totalTimeTextView.text = "Total Time: $formattedTime"
+
+        // Create the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false) // Disable dismiss on outside click
+            .create()
+
+        // Set up button listeners
+        dialogView.findViewById<ImageView>(R.id.return_home).setOnClickListener {
+            // Navigate back to the MainActivity
+            dialog.dismiss()
+            finish() // Finish this activity
+            // Start MainActivity here if needed
+            // val intent = Intent(this, MainActivity::class.java)
+            // startActivity(intent)
+        }
+
+        dialogView.findViewById<ImageView>(R.id.play_again).setOnClickListener {
+            // Restart the game
+            dialog.dismiss()
+            restartGame()
+        }
+
+        dialog.show()
+    }
+
+    private fun restartGame() {
+        // Stop the current timer
+        handler.removeCallbacks(runnable)
+
+        // Reset game variables
+        wrongAttempts = 0
+        score = 0
+        timerValue = 0
+
+        // Reset UI elements
+        binding.scoreCounter.text = "Score: $score"
+        binding.heartCounter.text = "3" // Assuming starting hearts are 3
+        binding.etAnswer.text?.clear() // Clear the answer field
+        binding.timer.text = "00:00" // Reset timer display
+
+        // Show the countdown dialog again
+        showCountdownDialog() // Start the countdown before the game starts
     }
 
     // Method to update the timer TextView
@@ -157,4 +252,25 @@ class EasyMultiplication : AppCompatActivity() {
         // Do nothing when the back button is pressed
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (::backgroundMusic.isInitialized && backgroundMusic.isPlaying) {
+            backgroundMusic.pause()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::backgroundMusic.isInitialized) {
+            backgroundMusic.start()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::backgroundMusic.isInitialized) {
+            backgroundMusic.stop()
+            backgroundMusic.release()
+        }
+    }
 }

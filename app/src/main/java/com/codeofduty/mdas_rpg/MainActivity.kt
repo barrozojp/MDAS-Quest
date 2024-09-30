@@ -1,6 +1,7 @@
 package com.codeofduty.mdas_rpg
 
 import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,12 +19,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
 
+    // MediaPlayer for background music
+    private lateinit var mediaPlayer: MediaPlayer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up the SoundPool
+        // Set up the SoundPool for tap sound
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_GAME)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -36,6 +40,11 @@ class MainActivity : AppCompatActivity() {
 
         // Load the tap sound from the raw folder
         tapSoundId = soundPool.load(this, R.raw.tap_sound, 1)
+
+        // Initialize and start background music
+        mediaPlayer = MediaPlayer.create(this, R.raw.background_music) // Assuming the file is in res/raw
+        mediaPlayer.isLooping = true // Enable looping for continuous background music
+        mediaPlayer.start() // Start playing the music
 
         binding.bottomNavigation.background = null
         binding.bottomNavigation.setOnItemSelectedListener(NavigationBarView.OnItemSelectedListener { item ->
@@ -62,16 +71,34 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
+    // Start music when the activity is resumed
+    override fun onResume() {
+        super.onResume()
+        mediaPlayer.start() // Start playing the music
+    }
+
+    // Stop the music when the activity goes into the background
+    override fun onPause() {
+        super.onPause()
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.pause() // Pause the music when leaving the activity
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        soundPool.release() // Release resources when the activity is destroyed
+        soundPool.release() // Release SoundPool resources
+        if (::mediaPlayer.isInitialized) {
+            mediaPlayer.stop()
+            mediaPlayer.release() // Release MediaPlayer resources when the activity is destroyed
+        }
     }
+
 
     // Disable the back button
     override fun onBackPressed() {
         // Do nothing when the back button is pressed
     }
-
 
     private fun openFragment(fragment: Fragment) {
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
