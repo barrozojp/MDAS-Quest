@@ -13,6 +13,10 @@
         android:theme="@style/Theme.MDASRPG"
         tools:targetApi="31">
         <activity
+            android:name=".EasyMultiplication"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+        <activity
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
@@ -31,7 +35,7 @@
         <activity
             android:name=".LoginRegister"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name=".MainActivity" />
     </application>
 

@@ -10,7 +10,7 @@
     <item
         android:id="@+id/bottom_leaderboard"
         android:title="Leaderboard"
-        android:icon="@drawable/baseline_signal_cellular_alt_24"/>
+        android:icon="@drawable/baseline_equalizer_24"/>
 
     <item
         android:id="@+id/bottom_notepad"
