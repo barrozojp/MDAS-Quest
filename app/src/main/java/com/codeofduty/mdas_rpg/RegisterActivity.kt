@@ -2,8 +2,11 @@ package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.R
@@ -14,11 +17,27 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
+    private lateinit var soundPool: SoundPool
+    private var tapSoundId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Set up the SoundPool for tap sound
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(1)
+            .setAudioAttributes(audioAttributes)
+            .build()
+
+        // Load the tap sound from the raw folder
+        tapSoundId = soundPool.load(this, R.raw.tap_sound, 1)
 
         // Username Validation (minimum 6 characters)
         val usernameStream = RxTextView.textChanges(binding.etUsername)
@@ -65,6 +84,15 @@ class RegisterActivity : AppCompatActivity() {
         binding.backTv.setOnClickListener {
             finish() // or implement any navigation logic if needed
         }
+    }
+
+    // Detect touch events and play the tap sound
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        // Play the tap sound when the user touches the screen
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            soundPool.play(tapSoundId, 1f, 1f, 1, 0, 1f)
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun showTextMinimalAlert(isNotValid: Boolean, text: String) {

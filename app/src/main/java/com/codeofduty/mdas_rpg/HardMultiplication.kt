@@ -15,18 +15,18 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.databinding.ActivityEasyMultiplicationBinding
+import com.codeofduty.mdas_rpg.databinding.ActivityHardMultiplicationBinding
 import com.jakewharton.rxbinding2.widget.RxTextView
 import kotlin.random.Random
 
 @SuppressLint("CheckResult")
-class EasyMultiplication : AppCompatActivity() {
-
-    private lateinit var binding: ActivityEasyMultiplicationBinding
+class HardMultiplication : AppCompatActivity() {
+    private lateinit var binding: ActivityHardMultiplicationBinding
     private var firstValue: Int = 0
     private var secondValue: Int = 0
     private var wrongAttempts: Int = 0
-    private var score: Int = 0 // Initialize score variable
-    private var timerValue: Int = 0 // Timer variable
+    private var score: Int = 0
+    private var timerValue: Int = 0
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private lateinit var soundPool: SoundPool
@@ -35,7 +35,7 @@ class EasyMultiplication : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityEasyMultiplicationBinding.inflate(layoutInflater)
+        binding = ActivityHardMultiplicationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Show the countdown dialog before starting the game
@@ -141,7 +141,7 @@ class EasyMultiplication : AppCompatActivity() {
 
     private fun generateQuestion() {
         // Generate random values between 1 and 10
-        firstValue = Random.nextInt(1, 11)
+        firstValue = Random.nextInt(1, 101)
         secondValue = Random.nextInt(1, 11)
 
         // Update the UI
@@ -210,6 +210,7 @@ class EasyMultiplication : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
+
 
         dialogView.findViewById<ImageView>(R.id.play_again).setOnClickListener {
             // Restart the game

@@ -15,13 +15,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.databinding.ActivityEasyMultiplicationBinding
+import com.codeofduty.mdas_rpg.databinding.ActivityMediumMultiplicationBinding
 import com.jakewharton.rxbinding2.widget.RxTextView
 import kotlin.random.Random
 
-@SuppressLint("CheckResult")
-class EasyMultiplication : AppCompatActivity() {
 
-    private lateinit var binding: ActivityEasyMultiplicationBinding
+@SuppressLint("CheckResult")
+class MediumMultiplication : AppCompatActivity() {
+    private lateinit var binding: ActivityMediumMultiplicationBinding
     private var firstValue: Int = 0
     private var secondValue: Int = 0
     private var wrongAttempts: Int = 0
@@ -35,7 +36,7 @@ class EasyMultiplication : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityEasyMultiplicationBinding.inflate(layoutInflater)
+        binding = ActivityMediumMultiplicationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Show the countdown dialog before starting the game
@@ -141,8 +142,8 @@ class EasyMultiplication : AppCompatActivity() {
 
     private fun generateQuestion() {
         // Generate random values between 1 and 10
-        firstValue = Random.nextInt(1, 11)
-        secondValue = Random.nextInt(1, 11)
+        firstValue = Random.nextInt(1, 51)
+        secondValue = Random.nextInt(1, 6)
 
         // Update the UI
         binding.firstValue.text = firstValue.toString()

@@ -26,6 +26,22 @@ class MultipicationFragment : Fragment() {
             startActivity(intent)
         }
 
+        // Set up the button click to launch MEDIUM
+        val btnMedium = view.findViewById<Button>(R.id.btn_medium)
+        btnMedium.setOnClickListener {
+            // Start the Medium activity
+            val intent = Intent(requireContext(), MediumMultiplication::class.java)
+            startActivity(intent)
+        }
+
+        // Set up the button click to launch MEDIUM
+        val btnHard = view.findViewById<Button>(R.id.btn_hard)
+        btnHard.setOnClickListener {
+            // Start the Hard activity
+            val intent = Intent(requireContext(), HardMultiplication::class.java)
+            startActivity(intent)
+        }
+
         return view
     }
 }
