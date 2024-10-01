@@ -40,6 +40,28 @@ class HomeFragment : Fragment() {
                 .commit()
         }
 
+        // Find the ADDITION button
+        val additionBtn = view.findViewById<Button>(R.id.btn_addition)
+        // Set OnClickListener for the multiplication button
+        additionBtn.setOnClickListener {
+            // Navigate to the MultiplicationFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, AdditionFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        // Find the SUBTRACTION button
+        val subtractionBtn = view.findViewById<Button>(R.id.btn_subtraction)
+        // Set OnClickListener for the multiplication button
+        subtractionBtn.setOnClickListener {
+            // Navigate to the MultiplicationFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, SubtractionFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         return view
     }
 

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_design"
+    tools:context=".AdditionFragment">
+
+    <TextView
+        android:id="@+id/operation_msg"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="YOUR OPERATION:"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:textColor="#003777"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/bosse"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/addition_title"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="@font/bosse"
+        android:layout_below="@id/operation_msg"
+        android:background="@drawable/gradient_button"
+        android:text="ADDITION"
+        android:textSize="30sp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <TextView
+        android:id="@+id/diffuculty_txt"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DIFFICULTY"
+        android:layout_below="@id/addition_title"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:textColor="#003777"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/bosse"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_easy"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_marginTop="10dp"
+        android:textColor="#003303"
+        android:fontFamily="@font/bosse"
+        android:background="@drawable/gradient_easy"
+        android:text="EASY"
+        android:textSize="30sp"
+        android:layout_below="@id/diffuculty_txt"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_medium"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_marginTop="10dp"
+        android:textColor="#615103"
+        android:fontFamily="@font/bosse"
+        android:background="@drawable/gradient_medium"
+        android:text="MEDIUM"
+        android:textSize="30sp"
+        android:layout_below="@id/btn_easy"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_hard"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_marginTop="10dp"
+        android:textColor="#500101"
+        android:fontFamily="@font/bosse"
+        android:background="@drawable/gradient_hard"
+        android:text="HARD"
+        android:textSize="30sp"
+        android:layout_below="@id/btn_medium"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+</RelativeLayout>
