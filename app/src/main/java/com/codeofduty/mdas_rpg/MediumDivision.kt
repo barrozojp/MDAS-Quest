@@ -8,6 +8,8 @@ import android.media.SoundPool
 import android.os.Bundle
 import android.media.MediaPlayer
 import android.os.Handler
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
@@ -170,6 +172,9 @@ class MediumDivision : AppCompatActivity() {
             // Update heart counter in the UI
             binding.heartCounter.text = "${3 - wrongAttempts}"
 
+            // Show heart lost dialog when the user loses a life
+            showHeartLostDialog()
+
             if (wrongAttempts >= 3) {
                 // Show the game over dialog when wrong attempts reach 3
                 showGameOverDialog()
@@ -251,6 +256,38 @@ class MediumDivision : AppCompatActivity() {
         val formattedTime = String.format("%02d:%02d", minutes, seconds)
         binding.timer.text = "$formattedTime" // Update the timer TextView
     }
+    private fun showHeartLostDialog() {
+        // Inflate the custom layout
+        val dialogView = layoutInflater.inflate(R.layout.dialog_heart_lost, null)
+
+        // Create the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        // Set the background of the dialog window to be transparent
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialog.show()
+
+        // Vibrate when the dialog appears
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            // Vibration effect for Android O and above
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)) // Vibrate for 500 milliseconds
+        } else {
+            // Vibration for devices below Android O
+            vibrator.vibrate(500) // Vibrate for 500 milliseconds
+        }
+
+        // Dismiss the dialog after 500 milliseconds
+        Handler().postDelayed({
+            dialog.dismiss()
+        }, 500)
+    }
+
 
     // Disable the back button
     override fun onBackPressed() {
