@@ -2,7 +2,9 @@ package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.SoundPool
 import android.os.Bundle
@@ -38,11 +40,16 @@ class MediumMultiplication : AppCompatActivity() {
     private lateinit var backgroundMusic: MediaPlayer
     private var correctAnswerCount: Int = 0
     private var heartCounter: Int = 3
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMediumMultiplicationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Load preferences
+        sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val isInGameMusicEnabled = sharedPreferences.getBoolean("in_game_music", true)
 
         // Show the countdown dialog before starting the game
         showCountdownDialog()
@@ -64,7 +71,13 @@ class MediumMultiplication : AppCompatActivity() {
         // Initialize and start background music
         backgroundMusic = MediaPlayer.create(this, R.raw.ingame_music)
         backgroundMusic.isLooping = true // Loop the music
-        backgroundMusic.start() // Start the music
+
+        // Check if in-game music should be played
+        if (isInGameMusicEnabled) {
+            backgroundMusic.start() // Start the music if enabled
+        } else {
+            backgroundMusic.pause() // Pause the music if disabled
+        }
     }
 
     // Detect touch events and play the tap sound
@@ -310,15 +323,18 @@ class MediumMultiplication : AppCompatActivity() {
 
         dialog.show()
 
-        // Vibrate when the dialog appears
+        // Vibrate when the dialog appears if enabled
         val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        val isVibrationEnabled = sharedPreferences.getBoolean("vibration", true) // Check vibration preference
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            // Vibration effect for Android O and above
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)) // Vibrate for 500 milliseconds
-        } else {
-            // Vibration for devices below Android O
-            vibrator.vibrate(500) // Vibrate for 500 milliseconds
+        if (isVibrationEnabled) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                // Vibration effect for Android O and above
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)) // Vibrate for 500 milliseconds
+            } else {
+                // Vibration for devices below Android O
+                vibrator.vibrate(500) // Vibrate for 500 milliseconds
+            }
         }
 
         // Dismiss the dialog after 500 milliseconds

@@ -1,5 +1,6 @@
 package com.codeofduty.mdas_rpg
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.SoundPool
@@ -71,10 +72,27 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    // Start music when the activity is resumed
+    fun setBackgroundMusicState(isEnabled: Boolean) {
+        if (isEnabled) {
+            if (!mediaPlayer.isPlaying) {
+                mediaPlayer.start() // Start playing the music
+            }
+        } else {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.pause() // Pause the music
+            }
+        }
+        // Save the state in SharedPreferences
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean("bg_music", isEnabled).apply()
+    }
+
     override fun onResume() {
         super.onResume()
-        mediaPlayer.start() // Start playing the music
+        // Restore the music state when resuming
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val isMusicEnabled = sharedPreferences.getBoolean("bg_music", true)
+        setBackgroundMusicState(isMusicEnabled)
     }
 
     // Stop the music when the activity goes into the background
