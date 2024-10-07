@@ -1,17 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_design"
     tools:context=".LeaderboardFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/leaderboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_alignParentEnd="true"
+        android:fontFamily="@font/boldreel"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/gradient_button"
+        android:text="Leaderboard"
+        android:textAlignment="center"
+        android:textColor="#F6F7FF"
+        android:textSize="40sp"
+        app:drawableStartCompat="@drawable/baseline_signal_cellular_alt_24"
+        app:drawableEndCompat="@drawable/baseline_equalizer_24"
+        app:drawableTint="#F6F7FF" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view_table"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/leaderboard"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:elevation="8dp"
+        android:background="#FFFFFF"
+        app:cardCornerRadius="20dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_whiteblue"
+            android:padding="16dp">
+            <TextView
+                android:id="@+id/rank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:fontFamily="@font/boldreel"
+                android:text="RANK"
+                android:textColor="#FF6D00"
+                android:textSize="25sp" />
+
+            <TextView
+                android:id="@+id/difficulty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="45dp"
+                android:layout_marginEnd="45dp"
+                android:layout_toStartOf="@+id/total_score"
+                android:layout_toEndOf="@+id/rank"
+                android:fontFamily="@font/boldreel"
+                android:text="Difficulty"
+                android:textColor="#D50000"
+                android:textSize="25sp" />
+
+            <TextView
+                android:id="@+id/total_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:fontFamily="@font/boldreel"
+                android:text="Score"
+                android:textColor="#304FFE"
+                android:textSize="25sp" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_leaderboard"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:textColor="#000"
-        android:text="LEADERBOARD" />
+        android:layout_below="@id/card_view_table"
+        android:layout_marginTop="5dp"
+        android:padding="16dp"/>
 
-</FrameLayout>
+
+</RelativeLayout>

@@ -19,6 +19,9 @@
         android:layout_marginTop="25dp"
         android:background="@drawable/gradient_button"
         android:text="SETTINGS"
+        android:drawableStart="@drawable/baseline_settings_24"
+        android:drawableEnd="@drawable/baseline_settings_24"
+        android:drawableTint="#F6F7FF"
         android:textAlignment="center"
         android:textColor="#F6F7FF"
         android:textSize="50sp" />

@@ -55,4 +55,6 @@ dependencies {
 
     // LOTTIE ANIMATION
     implementation("com.airbnb.android:lottie:5.2.0")
+    //RECYCLER VIEW
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 }
