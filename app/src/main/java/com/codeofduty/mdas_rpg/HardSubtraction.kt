@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
@@ -33,6 +34,8 @@ class HardSubtraction : AppCompatActivity() {
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
     private lateinit var backgroundMusic: MediaPlayer
+    private var correctAnswerCount: Int = 0
+    private var heartCounter: Int = 3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,24 +166,59 @@ class HardSubtraction : AppCompatActivity() {
         // Check if the user's answer is correct
         if (userAnswer == correctAnswer) {
             score++ // Increment the score
+            correctAnswerCount++ // Increment the correct answer count
+
+            // Check for bonus life every 10 correct answers
+            if (correctAnswerCount % 10 == 0) {
+                heartCounter++ // Increment heartCounter directly
+                binding.heartCounter.text = "$heartCounter" // Update the hearts counter in the UI
+
+                showBonusLifeDialog() // Show bonus life dialog
+            }
+
+            // Handle bonus points for every 5 correct answers
+            if (correctAnswerCount % 5 == 0) {
+                score += 5 // Add the bonus points
+                binding.scoreBonus.text = "Bonus +5 ✨" // Update bonus text
+
+                // Fade in and out the bonus TextView
+                binding.scoreBonus.alpha = 0f // Start from 0 (invisible)
+                binding.scoreBonus.visibility = View.VISIBLE
+                binding.scoreBonus.animate()
+                    .alpha(1f) // Fade in to 1 (fully visible)
+                    .setDuration(500) // Duration of fade in (500 ms)
+                    .withEndAction {
+                        // Fade out the TextView after 2 seconds delay
+                        Handler().postDelayed({
+                            binding.scoreBonus.animate()
+                                .alpha(0f) // Fade out to 0 (invisible)
+                                .setDuration(500) // Duration of fade out (500 ms)
+                                .withEndAction {
+                                    binding.scoreBonus.visibility = View.INVISIBLE // Hide the view
+                                }
+                        }, 2000) // Delay of 2 seconds
+                    }
+                    .start()
+            }
             binding.scoreCounter.text = "Score: $score" // Update the score display
             generateQuestion() // Generate a new question
         } else {
             wrongAttempts++ // Increment the wrong attempts count
-            // Update heart counter in the UI
-            binding.heartCounter.text = "${3 - wrongAttempts}"
+
+            // Decrease the heartCounter and update the UI
+            heartCounter--
+            binding.heartCounter.text = "$heartCounter"
 
             // Show heart lost dialog when the user loses a life
             showHeartLostDialog()
 
-            if (wrongAttempts >= 3) {
-                // Show the game over dialog when wrong attempts reach 3
+            if (heartCounter <= 0) {
+                // Show the game over dialog when hearts are 0 or below
                 showGameOverDialog()
             } else {
                 generateQuestion() // Generate a new question
             }
         }
-
         // Clear the EditText after processing the answer
         binding.etAnswer.text?.clear() // Clear the answer field
     }
@@ -234,16 +272,18 @@ class HardSubtraction : AppCompatActivity() {
         wrongAttempts = 0
         score = 0
         timerValue = 0
+        heartCounter = 3 // Reset heartCounter here to ensure logic matches UI
 
         // Reset UI elements
         binding.scoreCounter.text = "Score: $score"
-        binding.heartCounter.text = "3" // Assuming starting hearts are 3
+        binding.heartCounter.text = "$heartCounter" // Ensure this matches the reset heartCounter
         binding.etAnswer.text?.clear() // Clear the answer field
         binding.timer.text = "00:00" // Reset timer display
 
         // Show the countdown dialog again
         showCountdownDialog() // Start the countdown before the game starts
     }
+
 
     // Method to update the timer TextView
     private fun updateTimerText() {
@@ -285,6 +325,27 @@ class HardSubtraction : AppCompatActivity() {
         Handler().postDelayed({
             dialog.dismiss()
         }, 500)
+    }
+
+    private fun showBonusLifeDialog() {
+        // Inflate the custom layout for the bonus life dialog
+        val dialogView = layoutInflater.inflate(R.layout.dialog_bonus_life, null)
+
+        // Create the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        // Set the background of the dialog window to be transparent
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialog.show()
+
+        // Dismiss the dialog after 500 milliseconds
+        Handler().postDelayed({
+            dialog.dismiss()
+        }, 800)
     }
 
 
