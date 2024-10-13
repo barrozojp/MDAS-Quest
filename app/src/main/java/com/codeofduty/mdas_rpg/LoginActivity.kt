@@ -1,12 +1,17 @@
 package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.R
 import com.codeofduty.mdas_rpg.databinding.ActivityLoginBinding
@@ -18,11 +23,19 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
+    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var loadingDialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initialize the database helper
+        dbHelper = DatabaseHelper(this)
+
+        // Set up loading dialog
+        setupLoadingDialog()
 
         // Set up the SoundPool for tap sound
         val audioAttributes = AudioAttributes.Builder()
@@ -65,16 +78,45 @@ class LoginActivity : AppCompatActivity() {
 
         // Login button click event
         binding.btnLogin.setOnClickListener {
-            // Navigate to MainActivity
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            // Show loading dialog
+            loadingDialog.show()
+
+            // Delay for 2 seconds before checking login
+            Handler(Looper.getMainLooper()).postDelayed({
+                val username = binding.etUsername.text.toString()
+                val password = binding.etPassword.text.toString()
+
+                // Check credentials in SQLite
+                if (dbHelper.checkUserCredentials(username, password)) {
+                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+                    // Navigate to MainActivity
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
+                }
+
+                // Dismiss loading dialog
+                loadingDialog.dismiss()
+            }, 2000) // 2-second delay
         }
+
 
 
         binding.backTv.setOnClickListener {
             finish() // or implement any navigation logic if needed
         }
     }
+
+    // Set up the loading dialog
+    private fun setupLoadingDialog() {
+        loadingDialog = Dialog(this)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_loading, null)
+        loadingDialog.setContentView(dialogView)
+        loadingDialog.setCancelable(false) // Make it non-cancelable while loading
+        loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent) // Transparent background
+    }
+
 
     // Detect touch events and play the tap sound
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

@@ -1,11 +1,15 @@
 package com.codeofduty.mdas_rpg
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -19,11 +23,21 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
+    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var loadingDialog: Dialog
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initialize the database helper
+        dbHelper = DatabaseHelper(this)
+
+        // Set up loading dialog
+        setupLoadingDialog()
 
         // Set up the SoundPool for tap sound
         val audioAttributes = AudioAttributes.Builder()
@@ -73,12 +87,33 @@ class RegisterActivity : AppCompatActivity() {
 
         // Register button click event
         binding.btnLogin.setOnClickListener {
-            // Show a toast message
-            Toast.makeText(this, "Registration Complete", Toast.LENGTH_SHORT).show()
+            // Show loading dialog
+            loadingDialog.show()
 
-            // Navigate to LoginActivity
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            // Delay for 2 seconds before executing the registration logic
+            Handler(Looper.getMainLooper()).postDelayed({
+                val username = binding.etUsername.text.toString()
+                val password = binding.etPassword.text.toString()
+
+                // Check if the user already exists
+                if (dbHelper.checkUserExists(username)) {
+                    Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
+                } else {
+                    val isInserted = dbHelper.insertUser(username, password)
+                    if (isInserted) {
+                        Toast.makeText(this, "Registration Complete", Toast.LENGTH_SHORT).show()
+
+                        // Navigate to LoginActivity
+                        val intent = Intent(this, LoginActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                // Dismiss the loading dialog after the operation
+                loadingDialog.dismiss()
+            }, 2000) // 2-second delay
         }
 
         binding.backTv.setOnClickListener {
@@ -93,6 +128,15 @@ class RegisterActivity : AppCompatActivity() {
             soundPool.play(tapSoundId, 1f, 1f, 1, 0, 1f)
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    // Function to set up the loading dialog
+    private fun setupLoadingDialog() {
+        loadingDialog = Dialog(this)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_loading, null)
+        loadingDialog.setContentView(dialogView)
+        loadingDialog.setCancelable(false) // Make it non-cancelable while loading
+        loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent) // Transparent background
     }
 
     private fun showTextMinimalAlert(isNotValid: Boolean, text: String) {
