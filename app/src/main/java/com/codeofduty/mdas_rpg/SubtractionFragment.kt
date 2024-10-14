@@ -24,6 +24,7 @@ class SubtractionFragment : Fragment() {
         btnEasy.setOnClickListener {
             // Start the Easy activity
             val intent = Intent(requireContext(), EasySubtraction::class.java)
+            intent.putExtra("operation_difficulty", "Minus/Easy")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -32,6 +33,7 @@ class SubtractionFragment : Fragment() {
         btnMedium.setOnClickListener {
             // Start the Medium activity
             val intent = Intent(requireContext(), MediumSubtraction::class.java)
+            intent.putExtra("operation_difficulty", "Minus/Medium")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -40,6 +42,7 @@ class SubtractionFragment : Fragment() {
         btnHard.setOnClickListener {
             // Start the Hard activity
             val intent = Intent(requireContext(), HardSubtraction::class.java)
+            intent.putExtra("operation_difficulty", "Minus/Hard")  // Pass difficulty level
             startActivity(intent)
 
         }

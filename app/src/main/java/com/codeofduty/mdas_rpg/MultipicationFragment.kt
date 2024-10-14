@@ -23,6 +23,7 @@ class MultipicationFragment : Fragment() {
         btnEasy.setOnClickListener {
             // Start the EasyMultiplication activity
             val intent = Intent(requireContext(), EasyMultiplication::class.java)
+            intent.putExtra("operation_difficulty", "Multiply/Easy")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -31,6 +32,7 @@ class MultipicationFragment : Fragment() {
         btnMedium.setOnClickListener {
             // Start the Medium activity
             val intent = Intent(requireContext(), MediumMultiplication::class.java)
+            intent.putExtra("operation_difficulty", "Multiply/Medium")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -39,6 +41,7 @@ class MultipicationFragment : Fragment() {
         btnHard.setOnClickListener {
             // Start the Hard activity
             val intent = Intent(requireContext(), HardMultiplication::class.java)
+            intent.putExtra("operation_difficulty", "Multiply/Hard")  // Pass difficulty level
             startActivity(intent)
         }
 

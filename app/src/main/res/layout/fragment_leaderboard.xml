@@ -80,13 +80,34 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/anim_empty"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginTop="100dp"
+        android:layout_below="@id/card_view_table"
+        android:visibility="visible"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/empty_leaderboard_animation" />
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Leaderboard is empty!"
+        android:layout_below="@id/anim_empty"
+        android:fontFamily="@font/boldreel"
+        android:textSize="30sp"
+        android:textColor="#BA4F00"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_leaderboard"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/card_view_table"
         android:layout_marginTop="5dp"
-        android:padding="16dp"/>
+        android:padding="16dp" />
 
 
 </RelativeLayout>

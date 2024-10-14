@@ -23,6 +23,7 @@ class DivisionFragment : Fragment() {
         btnEasy.setOnClickListener {
             // Start the EasyMultiplication activity
             val intent = Intent(requireContext(), EasyDivision::class.java)
+            intent.putExtra("operation_difficulty", "Divide/Easy")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -31,6 +32,7 @@ class DivisionFragment : Fragment() {
         btnMedium.setOnClickListener {
             // Start the Medium activity
             val intent = Intent(requireContext(), MediumDivision::class.java)
+            intent.putExtra("operation_difficulty", "Divide/Medium")  // Pass difficulty level
             startActivity(intent)
         }
 
@@ -39,6 +41,7 @@ class DivisionFragment : Fragment() {
         btnHard.setOnClickListener {
             // Start the Hard activity
             val intent = Intent(requireContext(), HardDivision::class.java)
+            intent.putExtra("operation_difficulty", "Divide/Hard")  // Pass difficulty level
             startActivity(intent)
         }
 

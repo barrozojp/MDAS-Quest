@@ -39,11 +39,18 @@ class MediumSubtraction : AppCompatActivity() {
     private var correctAnswerCount: Int = 0
     private var heartCounter: Int = 3
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var operationDifficulty: String
+    private lateinit var databaseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMediumSubtractionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        databaseHelper = DatabaseHelper(this)
+
+        // Get the passed operation difficulty
+        operationDifficulty = intent.getStringExtra("operation_difficulty") ?: "Unknown"
 
         // Load preferences
         sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -238,39 +245,41 @@ class MediumSubtraction : AppCompatActivity() {
     }
 
     private fun showGameOverDialog() {
+        // Retrieve the username from SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE) // Use the correct SharedPreferences
+        val username = sharedPreferences.getString("username", "") ?: ""
+
+
+        // Insert the game record into the database using the username
+        val isInserted = databaseHelper.insertGameRecord(username, operationDifficulty, score)
+
         // Inflate the custom layout for the game over dialog
         val dialogView = layoutInflater.inflate(R.layout.dialog_gameover, null)
-
-        // Find the TextViews to display scores and time (if needed)
         val totalScoreTextView = dialogView.findViewById<TextView>(R.id.dialog_totalScore)
         val totalTimeTextView = dialogView.findViewById<TextView>(R.id.dialog_totalTime)
 
-        // Set the total score text
         totalScoreTextView.text = "Total Score: $score"
-
-        // You can set the total time text if you want
         val formattedTime = String.format("%02d:%02d", timerValue / 60, timerValue % 60)
         totalTimeTextView.text = "Total Time: $formattedTime"
 
-        // Create the dialog
+        if (!isInserted) {
+            totalScoreTextView.text = "Error saving score"
+        }
+
+        // Show the dialog
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            .setCancelable(false) // Disable dismiss on outside click
+            .setCancelable(false)
             .create()
 
-        // Set up button listeners
         dialogView.findViewById<ImageView>(R.id.return_home).setOnClickListener {
-            // Dismiss the dialog
             dialog.dismiss()
-            // Finish this current activity
             finish()
-            // Start MainActivity
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
         dialogView.findViewById<ImageView>(R.id.play_again).setOnClickListener {
-            // Restart the game
             dialog.dismiss()
             restartGame()
         }

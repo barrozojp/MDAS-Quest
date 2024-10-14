@@ -3,6 +3,7 @@ package com.codeofduty.mdas_rpg
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
@@ -25,11 +26,13 @@ class LoginActivity : AppCompatActivity() {
     private var tapSoundId: Int = 0
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var loadingDialog: Dialog
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
 
         // Initialize the database helper
         dbHelper = DatabaseHelper(this)
@@ -77,6 +80,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Login button click event
+
         binding.btnLogin.setOnClickListener {
             // Show loading dialog
             loadingDialog.show()
@@ -89,19 +93,29 @@ class LoginActivity : AppCompatActivity() {
                 // Check credentials in SQLite
                 if (dbHelper.checkUserCredentials(username, password)) {
                     Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+
+                    // Get the user ID
+                    val userId = dbHelper.getUserId(username) // Assuming this method returns the correct userId
+
+                    // Save user ID to SharedPreferences
+                    sharedPreferences.edit().putInt("loggedInUserId", userId).apply()
+
+                    // Save the username to SharedPreferences
+                    sharedPreferences.edit().putString("username", username).apply()
+
                     // Navigate to MainActivity
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
+                    finish() // Call finish() to prevent going back to the login screen
                 } else {
                     Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
                 }
+
 
                 // Dismiss loading dialog
                 loadingDialog.dismiss()
             }, 2000) // 2-second delay
         }
-
-
 
         binding.backTv.setOnClickListener {
             finish() // or implement any navigation logic if needed

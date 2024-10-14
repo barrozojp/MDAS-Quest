@@ -16,32 +16,30 @@ class AdditionFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_addition, container, false)
 
         // EASY
         val btnEasy = view.findViewById<Button>(R.id.btn_easy)
         btnEasy.setOnClickListener {
-            // Start the Easy activity
             val intent = Intent(requireContext(), EasyAddition::class.java)
+            intent.putExtra("operation_difficulty", "Add/Easy")  // Pass difficulty level
             startActivity(intent)
         }
 
         // MEDIUM
         val btnMedium = view.findViewById<Button>(R.id.btn_medium)
         btnMedium.setOnClickListener {
-            // Start the Medium activity
             val intent = Intent(requireContext(), MediumAddition::class.java)
+            intent.putExtra("operation_difficulty", "Add/Medium")  // Pass difficulty level
             startActivity(intent)
         }
 
-        //HARD
+        // HARD
         val btnHard = view.findViewById<Button>(R.id.btn_hard)
         btnHard.setOnClickListener {
-            // Start the Hard activity
             val intent = Intent(requireContext(), HardAddition::class.java)
+            intent.putExtra("operation_difficulty", "Add/Hard")  // Pass difficulty level
             startActivity(intent)
-
         }
 
         return view

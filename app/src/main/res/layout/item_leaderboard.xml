@@ -11,16 +11,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/rantau"
-        android:textColor="#000000"
+        android:textColor="#DD2C00"
         android:textSize="25sp" />
 
     <TextView
-        android:id="@+id/difficulty"
+        android:id="@+id/operationdifficulty"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:fontFamily="@font/rantau"
-        android:textColor="#000000"
+        android:textColor="#CD0000"
         android:textSize="25sp"
         android:gravity="center" />
 
@@ -29,6 +29,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/rantau"
-        android:textColor="#000000"
+        android:textColor="#000E5C"
         android:textSize="25sp" />
 </LinearLayout>
