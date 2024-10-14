@@ -128,5 +128,91 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return leaderboard
     }
 
+    fun updateUsername(oldUsername: String, newUsername: String): Boolean {
+        val db = this.writableDatabase
+
+        // Start a transaction to ensure both updates happen together
+        db.beginTransaction()
+        try {
+            // Update the username in the Users table
+            val userContentValues = ContentValues().apply {
+                put(COLUMN_USERNAME, newUsername)
+            }
+            val userUpdateResult = db.update(
+                TABLE_USERS,
+                userContentValues,
+                "$COLUMN_USERNAME = ?",
+                arrayOf(oldUsername)
+            )
+
+            // Update the username in the game_table
+            val gameContentValues = ContentValues().apply {
+                put(COLUMN_GAME_USERNAME, newUsername)
+            }
+            val gameUpdateResult = db.update(
+                TABLE_GAME,
+                gameContentValues,
+                "$COLUMN_GAME_USERNAME = ?",
+                arrayOf(oldUsername)
+            )
+
+            // If both updates are successful, commit the transaction
+            if (userUpdateResult > 0 && gameUpdateResult > 0) {
+                db.setTransactionSuccessful()
+                return true
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            db.endTransaction()
+        }
+
+        return false
+    }
+
+    fun updatePassword(username: String, newPassword: String): Boolean {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_PASSWORD, newPassword)
+        }
+        val result = db.update(
+            TABLE_USERS,
+            contentValues,
+            "$COLUMN_USERNAME = ?",
+            arrayOf(username)
+        )
+        return result > 0
+    }
+
+    fun deleteUserAccount(username: String): Boolean {
+        val db = this.writableDatabase
+
+        // Start a transaction to ensure both deletions happen together
+        db.beginTransaction()
+        return try {
+            // Delete game records that match the username
+            db.delete(TABLE_GAME, "$COLUMN_GAME_USERNAME = ?", arrayOf(username))
+
+            // Delete the user account
+            val success = db.delete(TABLE_USERS, "$COLUMN_USERNAME = ?", arrayOf(username))
+
+            // If user deletion was successful, commit the transaction
+            if (success > 0) {
+                db.setTransactionSuccessful()
+                true // Account and related game records deleted successfully
+            } else {
+                false // Account deletion failed
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false // An error occurred
+        } finally {
+            db.endTransaction()
+            db.close() // Close the database
+        }
+    }
+
+
+
 
 }
