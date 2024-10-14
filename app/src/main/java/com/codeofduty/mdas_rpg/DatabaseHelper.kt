@@ -8,17 +8,17 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_NAME = "UserDatabase.db"
-        private const val DATABASE_VERSION = 2
-        private const val TABLE_USERS = "Users"
-        private const val TABLE_GAME = "game_table"
-        private const val COLUMN_GAME_ID = "game_id"
-        private const val COLUMN_OPERATION_DIFFICULTY = "operation_difficulty"
-        private const val COLUMN_SCORE = "score"
-        private const val COLUMN_ID = "id"
-        private const val COLUMN_USERNAME = "username"
-        private const val COLUMN_PASSWORD = "password"
-        private const val COLUMN_GAME_USERNAME = "game_username"
+        const val DATABASE_NAME = "UserDatabase.db"
+        const val DATABASE_VERSION = 2
+        const val TABLE_USERS = "Users"
+        const val TABLE_GAME = "game_table"
+        const val COLUMN_GAME_ID = "game_id"
+        const val COLUMN_OPERATION_DIFFICULTY = "operation_difficulty"
+        const val COLUMN_SCORE = "score"
+        const val COLUMN_ID = "id"
+        const val COLUMN_USERNAME = "username"
+        const val COLUMN_PASSWORD = "password"
+        const val COLUMN_GAME_USERNAME = "game_username"
     }
 
     override fun onCreate(db: SQLiteDatabase) {

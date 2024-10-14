@@ -8,6 +8,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.appcompat.widget.SwitchCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Environment
+import android.util.Log
+import androidx.appcompat.widget.AppCompatButton
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import android.widget.Toast
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 
 class SettingsFragment : Fragment() {
 
@@ -49,8 +60,88 @@ class SettingsFragment : Fragment() {
             activity.setBackgroundMusicState(isChecked)
         }
 
+        val exportButton: AppCompatButton = view.findViewById(R.id.btn_export)
+        exportButton.setOnClickListener {
+            onExportButtonClick()
+        }
+
         return view
     }
+
+    private fun exportDatabaseToCSV() {
+        val dbHelper = DatabaseHelper(requireContext())
+        val db = dbHelper.readableDatabase
+
+        // Create "MDAS Data" folder in external storage
+        val dir = File(Environment.getExternalStorageDirectory(), "Download")
+        if (!dir.exists()) {
+            dir.mkdirs() // Create the directory if it doesn't exist
+        }
+
+        // Define the CSV file inside the "MDAS Data" folder
+        val csvFile = File(dir, "UserDatabaseExport.csv")
+
+        try {
+            val fileWriter = FileWriter(csvFile)
+            // Write headers
+            fileWriter.append("Username,Password,Operation Difficulty,Score\n")
+
+            // Export Users
+            val userCursor = db.rawQuery("SELECT ${DatabaseHelper.COLUMN_USERNAME}, ${DatabaseHelper.COLUMN_PASSWORD} FROM ${DatabaseHelper.TABLE_USERS}", null)
+            if (userCursor.moveToFirst()) {
+                do {
+                    val username = userCursor.getString(0)
+                    val password = userCursor.getString(1)
+                    fileWriter.append("$username,$password,\n") // Add a comma for game data later
+                } while (userCursor.moveToNext())
+            }
+            userCursor.close()
+
+            // Export Game Records
+            val gameCursor = db.rawQuery("SELECT ${DatabaseHelper.COLUMN_GAME_USERNAME}, ${DatabaseHelper.COLUMN_OPERATION_DIFFICULTY}, ${DatabaseHelper.COLUMN_SCORE} FROM ${DatabaseHelper.TABLE_GAME}", null)
+            if (gameCursor.moveToFirst()) {
+                do {
+                    val gameUsername = gameCursor.getString(0)
+                    val operationDifficulty = gameCursor.getString(1)
+                    val score = gameCursor.getInt(2)
+                    fileWriter.append("$gameUsername,,$operationDifficulty,$score\n") // Add a comma for user data
+                } while (gameCursor.moveToNext())
+            }
+            gameCursor.close()
+
+            fileWriter.flush()
+            fileWriter.close()
+
+            // Inform the user about success
+            Toast.makeText(requireContext(), "CSV file created in 'MDAS Data' folder: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (e: IOException) {
+            // Handle the error using a Toast
+            Toast.makeText(requireContext(), "Error writing CSV file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private fun checkPermissionAndExport() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+        } else {
+            exportDatabaseToCSV()
+        }
+    }
+
+    // Call this method when the export button is clicked
+    private fun onExportButtonClick() {
+        checkPermissionAndExport()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                exportDatabaseToCSV()
+            } else {
+                Toast.makeText(requireContext(), "Permission denied to write external storage", Toast.LENGTH_SHORT).show() // Inform user of denied permission
+            }
+        }
+    }
 }
-
-
