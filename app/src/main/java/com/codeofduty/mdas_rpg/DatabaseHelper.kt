@@ -131,9 +131,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun updateUsername(oldUsername: String, newUsername: String): Boolean {
         val db = this.writableDatabase
 
-        // Start a transaction to ensure both updates happen together
+        // Start a transaction to ensure the update happens atomically
         db.beginTransaction()
-        try {
+        return try {
             // Update the username in the Users table
             val userContentValues = ContentValues().apply {
                 put(COLUMN_USERNAME, newUsername)
@@ -145,29 +145,31 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 arrayOf(oldUsername)
             )
 
-            // Update the username in the game_table
+            // Update the username in the game_table, if it exists
             val gameContentValues = ContentValues().apply {
                 put(COLUMN_GAME_USERNAME, newUsername)
             }
-            val gameUpdateResult = db.update(
+            db.update(
                 TABLE_GAME,
                 gameContentValues,
                 "$COLUMN_GAME_USERNAME = ?",
                 arrayOf(oldUsername)
             )
 
-            // If both updates are successful, commit the transaction
-            if (userUpdateResult > 0 && gameUpdateResult > 0) {
+            // If the user update is successful, commit the transaction
+            if (userUpdateResult > 0) {
                 db.setTransactionSuccessful()
-                return true
+                true // Username updated successfully
+            } else {
+                false // Username update failed
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            false // An error occurred
         } finally {
             db.endTransaction()
+            db.close() // Close the database
         }
-
-        return false
     }
 
     fun updatePassword(username: String, newPassword: String): Boolean {
