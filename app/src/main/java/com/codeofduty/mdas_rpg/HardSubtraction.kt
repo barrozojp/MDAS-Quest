@@ -60,6 +60,11 @@ class HardSubtraction : AppCompatActivity() {
         // Show the countdown dialog before starting the game
         showCountdownDialog()
 
+        // Add click listener for the menu game button
+        binding.menuGame.setOnClickListener {
+            showPauseDialog()
+        }
+
         // Set up the SoundPool
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_GAME)
@@ -198,29 +203,32 @@ class HardSubtraction : AppCompatActivity() {
             }
 
             // Handle bonus points for every 5 correct answers
-            if (correctAnswerCount % 5 == 0) {
+            if (correctAnswerCount % 7 == 0) {
                 score += 5 // Add the bonus points
-                binding.scoreBonus.text = "Bonus +5 ✨" // Update bonus text
 
-                // Fade in and out the bonus TextView
-                binding.scoreBonus.alpha = 0f // Start from 0 (invisible)
-                binding.scoreBonus.visibility = View.VISIBLE
-                binding.scoreBonus.animate()
-                    .alpha(1f) // Fade in to 1 (fully visible)
-                    .setDuration(500) // Duration of fade in (500 ms)
-                    .withEndAction {
-                        // Fade out the TextView after 2 seconds delay
-                        Handler().postDelayed({
-                            binding.scoreBonus.animate()
-                                .alpha(0f) // Fade out to 0 (invisible)
-                                .setDuration(500) // Duration of fade out (500 ms)
-                                .withEndAction {
-                                    binding.scoreBonus.visibility = View.INVISIBLE // Hide the view
-                                }
-                        }, 2000) // Delay of 2 seconds
+                // Inflate the dialog layout
+                val dialogView = layoutInflater.inflate(R.layout.dialog_bonus_points, null)
+
+                // Create the dialog
+                val bonusDialog = AlertDialog.Builder(this)
+                    .setView(dialogView)
+                    .setCancelable(false) // Allow dialog to be dismissed when touching outside
+                    .create()
+
+                // Show the dialog
+                bonusDialog.show()
+
+                // Set the background of the dialog to transparent
+                bonusDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+                // Dismiss the dialog after 800 ms
+                Handler().postDelayed({
+                    if (bonusDialog.isShowing) {
+                        bonusDialog.dismiss()
                     }
-                    .start()
+                }, 1300) // Display for 0.8 seconds
             }
+
             binding.scoreCounter.text = "Score: $score" // Update the score display
             generateQuestion() // Generate a new question
         } else {
@@ -373,6 +381,37 @@ class HardSubtraction : AppCompatActivity() {
             dialog.dismiss()
         }, 800)
     }
+    private fun showPauseDialog() {
+        // Inflate the custom layout for the dialog
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pausegame, null) // Adjust this name if necessary
+
+        // Create the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false) // Prevent dismissing on outside click
+            .create()
+
+        // Find buttons in the dialog view
+        val resumeButton = dialogView.findViewById<ImageView>(R.id.resume)
+        val returnHomeButton = dialogView.findViewById<ImageView>(R.id.return_home)
+
+        // Set up the click listener for the resume button
+        resumeButton.setOnClickListener {
+            dialog.dismiss() // Dismiss the dialog to resume the game
+        }
+
+        // Set up the click listener for the return home button
+        returnHomeButton.setOnClickListener {
+            dialog.dismiss() // Dismiss the dialog
+            finish() // Finish current activity
+            val intent = Intent(this, MainActivity::class.java) // Assuming MainActivity is your home screen
+            startActivity(intent) // Navigate to MainActivity
+        }
+
+        // Show the dialog
+        dialog.show()
+    }
+
 
 
     // Disable the back button

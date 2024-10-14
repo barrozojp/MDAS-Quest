@@ -7,12 +7,24 @@
     android:background="@drawable/background_design"
     tools:context=".MediumSubtraction">
 
+    <ImageView
+        android:id="@+id/menu_game"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:src="@drawable/baseline_menu_24" />
+
     <TextView
         android:id="@+id/heart_counter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="30dp"
+        android:layout_below="@id/menu_game"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
         android:text="3"
         android:fontFamily="@font/boldreel"
@@ -27,7 +39,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="30dp"
+        android:layout_below="@id/menu_game"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="15dp"
         android:text="Score: "
         android:fontFamily="@font/boldreel"
@@ -36,20 +49,6 @@
         android:textAlignment="textEnd"
         android:textSize="35sp" />
 
-    <TextView
-        android:id="@+id/score_bonus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="20dp"
-        android:text="Bonus +5 ✨"
-        android:layout_below="@id/score_counter"
-        android:fontFamily="@font/boldreel"
-        android:textColor="#00C853"
-        android:visibility="invisible"
-        android:drawablePadding="10dp"
-        android:textAlignment="textEnd"
-        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/timer"
