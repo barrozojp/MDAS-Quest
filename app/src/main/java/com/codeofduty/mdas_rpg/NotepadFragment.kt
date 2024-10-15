@@ -44,6 +44,9 @@ class NotepadFragment : Fragment() {
         binding.notesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.notesRecyclerView.adapter = notesAdapter
 
+        // Check if notes are empty and toggle visibility
+        toggleEmptyState()
+
         binding.addButton.setOnClickListener {
             val intent = Intent(requireContext(), AddNoteActivity::class.java).apply {
                 putExtra("username", currentUsername) // Pass the username to AddNoteActivity
@@ -52,10 +55,25 @@ class NotepadFragment : Fragment() {
         }
     }
 
+    private fun toggleEmptyState() {
+        // Check if the notes list is empty
+        if (notesAdapter.itemCount == 0) {
+            binding.animEmpty.visibility = View.VISIBLE // Show animation
+            binding.tvEmpty.visibility = View.VISIBLE // Show text
+            binding.notesRecyclerView.visibility = View.GONE // Hide RecyclerView
+        } else {
+            binding.animEmpty.visibility = View.GONE // Hide animation
+            binding.tvEmpty.visibility = View.GONE // Hide text
+            binding.notesRecyclerView.visibility = View.VISIBLE // Show RecyclerView
+        }
+    }
 
     override fun onResume() {
         super.onResume()
         notesAdapter.refreshData(db.getAllNotes(currentUsername)) // Pass currentUsername here to refresh notes
+
+        // Check if notes are empty and toggle visibility
+        toggleEmptyState()
     }
 
     override fun onDestroyView() {

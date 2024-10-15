@@ -32,6 +32,10 @@ class UpdateNoteActivity : AppCompatActivity() {
         binding.updateTitleEditText.setText(note.title)
         binding.updateContentEditText.setText(note.content)
 
+        // Set text color programmatically
+        binding.updateTitleEditText.setTextColor(getResources().getColor(android.R.color.black))
+        binding.updateContentEditText.setTextColor(getResources().getColor(android.R.color.black))
+
         binding.updateSaveButton.setOnClickListener {
             val newTitle = binding.updateTitleEditText.text.toString()
             val newContent = binding.updateContentEditText.text.toString()

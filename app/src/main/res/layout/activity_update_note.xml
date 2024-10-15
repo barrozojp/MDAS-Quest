@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
+    android:background="@drawable/background_design"
     tools:context=".UpdateNoteActivity">
 
     <TextView
@@ -14,8 +15,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/boldreel"
-        android:text="Edit Note."
-        android:textColor="#000"
+        android:text="Edit Note"
+        android:textColor="#0C215E"
         android:textSize="24sp" />
 
     <ImageView
@@ -24,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="6dp"
-        android:src="@drawable/baseline_note_add_24" />
+        android:src="@drawable/baseline_check_circle_24" />
 
     <EditText
         android:id="@+id/updateTitleEditText"
@@ -35,6 +36,8 @@
         android:background="@drawable/cyan_border"
         android:fontFamily="@font/boldreel"
         android:hint="Enter the title"
+        android:backgroundTint="#D5E9EC"
+        android:textColorHint="#3F4555"
         android:maxLines="1"
         android:padding="12sp"
         android:textSize="20sp" />
@@ -45,9 +48,11 @@
         android:layout_height="match_parent"
         android:layout_below="@id/updateTitleEditText"
         android:layout_marginTop="12dp"
+        android:backgroundTint="#E4ECED"
         android:background="@drawable/cyan_border"
         android:fontFamily="@font/boldreel"
         android:gravity="top"
+        android:textColorHint="#3F4555"
         android:hint="Enter the description"
         android:padding="12dp"
         android:textSize="18sp" />
