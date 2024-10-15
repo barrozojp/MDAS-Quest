@@ -1,11 +1,15 @@
 package com.codeofduty.mdas_rpg
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import com.codeofduty.mdas_rpg.databinding.ActivityLoginRegisterBinding
@@ -16,6 +20,7 @@ class LoginRegister : AppCompatActivity() {
     private lateinit var binding: ActivityLoginRegisterBinding
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +39,20 @@ class LoginRegister : AppCompatActivity() {
         // Load the tap sound from the raw folder
         tapSoundId = soundPool.load(this, R.raw.tap_sound, 1)
 
+        // Initialize SharedPreferences
+        sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+
+        // Check if the dialog has been shown before
+        val isDialogShown = sharedPreferences.getBoolean("imageSliderShown", false)
+
+        // Show image slider dialog automatically if not shown before
+        if (!isDialogShown) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                showImageSliderDialog() // Show the dialog automatically
+                // Set the flag to true so the dialog is not shown again
+                sharedPreferences.edit().putBoolean("imageSliderShown", true).apply()
+            }, 1000) // Delay of 0.8 second (adjust as needed)
+        }
 
         // Initialize View Binding
         binding = ActivityLoginRegisterBinding.inflate(layoutInflater)
@@ -73,5 +92,9 @@ class LoginRegister : AppCompatActivity() {
         val fadeIn = ObjectAnimator.ofFloat(binding.contentLayout, "alpha", 0f, 1f)
         fadeIn.duration = 1500
         fadeIn.start()
+    }
+    private fun showImageSliderDialog() {
+        val imageSliderDialog = ImageSliderDialogFragment()
+        imageSliderDialog.show(supportFragmentManager, "ImageSliderDialog")
     }
 }
