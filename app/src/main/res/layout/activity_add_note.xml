@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:padding="16dp"
     android:background="@drawable/background_design"
     tools:context=".AddNoteActivity">
 
@@ -40,7 +40,6 @@
         android:backgroundTint="#D5E9EC"
         android:textColorHint="#3F4555"
         android:maxLines="1"
-        android:textColor="#000"
         android:padding="12sp"
         android:textSize="20sp" />
 
@@ -51,7 +50,6 @@
         android:layout_below="@id/titleEditText"
         android:layout_marginTop="12dp"
         android:backgroundTint="#E4ECED"
-        android:textColor="#000"
         android:background="@drawable/cyan_border"
         android:fontFamily="@font/boldreel"
         android:gravity="top"
