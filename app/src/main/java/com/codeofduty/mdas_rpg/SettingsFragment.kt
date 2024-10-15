@@ -68,23 +68,39 @@ class SettingsFragment : Fragment() {
         return view
     }
 
-    private fun exportDatabaseToCSV() {
+    private fun checkPermissionAndExport() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+        } else {
+            exportUserDataToCSV()
+            exportUserScoreToCSV()
+            exportUserNotesToCSV()
+        }
+    }
+
+    private fun onExportButtonClick() {
+        checkPermissionAndExport()
+    }
+
+    private fun exportUserDataToCSV() {
         val dbHelper = DatabaseHelper(requireContext())
         val db = dbHelper.readableDatabase
 
         // Create "MDAS Data" folder in external storage
-        val dir = File(Environment.getExternalStorageDirectory(), "Download")
+        val dir = File(Environment.getExternalStorageDirectory(), "Download/MDAS-Data")
         if (!dir.exists()) {
             dir.mkdirs() // Create the directory if it doesn't exist
         }
 
-        // Define the CSV file inside the "MDAS Data" folder
-        val csvFile = File(dir, "UserDatabaseExport.csv")
+        // Define the CSV file for user data
+        val csvFile = File(dir, "UserDataExport.csv")
 
         try {
             val fileWriter = FileWriter(csvFile)
             // Write headers
-            fileWriter.append("Username,Password,Operation Difficulty,Score\n")
+            fileWriter.append("Username,Password\n")
 
             // Export Users
             val userCursor = db.rawQuery("SELECT ${DatabaseHelper.COLUMN_USERNAME}, ${DatabaseHelper.COLUMN_PASSWORD} FROM ${DatabaseHelper.TABLE_USERS}", null)
@@ -92,10 +108,39 @@ class SettingsFragment : Fragment() {
                 do {
                     val username = userCursor.getString(0)
                     val password = userCursor.getString(1)
-                    fileWriter.append("$username,$password,\n") // Add a comma for game data later
+                    fileWriter.append("$username,$password\n")
                 } while (userCursor.moveToNext())
             }
             userCursor.close()
+
+            fileWriter.flush()
+            fileWriter.close()
+
+            // Inform the user about success
+            Toast.makeText(requireContext(), "User Data CSV file created: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (e: IOException) {
+            // Handle the error using a Toast
+            Toast.makeText(requireContext(), "Error writing User Data CSV file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun exportUserScoreToCSV() {
+        val dbHelper = DatabaseHelper(requireContext())
+        val db = dbHelper.readableDatabase
+
+        // Create "MDAS Data" folder in external storage
+        val dir = File(Environment.getExternalStorageDirectory(), "Download/MDAS-Data")
+        if (!dir.exists()) {
+            dir.mkdirs() // Create the directory if it doesn't exist
+        }
+
+        // Define the CSV file for user scores
+        val csvFile = File(dir, "UserScoreExport.csv")
+
+        try {
+            val fileWriter = FileWriter(csvFile)
+            // Write headers
+            fileWriter.append("Username,Operation Difficulty,Score\n")
 
             // Export Game Records
             val gameCursor = db.rawQuery("SELECT ${DatabaseHelper.COLUMN_GAME_USERNAME}, ${DatabaseHelper.COLUMN_OPERATION_DIFFICULTY}, ${DatabaseHelper.COLUMN_SCORE} FROM ${DatabaseHelper.TABLE_GAME}", null)
@@ -104,7 +149,7 @@ class SettingsFragment : Fragment() {
                     val gameUsername = gameCursor.getString(0)
                     val operationDifficulty = gameCursor.getString(1)
                     val score = gameCursor.getInt(2)
-                    fileWriter.append("$gameUsername,,$operationDifficulty,$score\n") // Add a comma for user data
+                    fileWriter.append("$gameUsername,$operationDifficulty,$score\n")
                 } while (gameCursor.moveToNext())
             }
             gameCursor.close()
@@ -113,32 +158,61 @@ class SettingsFragment : Fragment() {
             fileWriter.close()
 
             // Inform the user about success
-            Toast.makeText(requireContext(), "CSV file created in 'MDAS Data' folder: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "User Score CSV file created: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
         } catch (e: IOException) {
             // Handle the error using a Toast
-            Toast.makeText(requireContext(), "Error writing CSV file: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-    private fun checkPermissionAndExport() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(),
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
-        } else {
-            exportDatabaseToCSV()
+            Toast.makeText(requireContext(), "Error writing User Score CSV file: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Call this method when the export button is clicked
-    private fun onExportButtonClick() {
-        checkPermissionAndExport()
+    private fun exportUserNotesToCSV() {
+        val dbHelper = DatabaseHelper(requireContext())
+        val db = dbHelper.readableDatabase
+
+        // Create "MDAS Data" folder in external storage
+        val dir = File(Environment.getExternalStorageDirectory(), "Download/MDAS-Data")
+        if (!dir.exists()) {
+            dir.mkdirs() // Create the directory if it doesn't exist
+        }
+
+        // Define the CSV file for user notes
+        val csvFile = File(dir, "UserNotesExport.csv")
+
+        try {
+            val fileWriter = FileWriter(csvFile)
+            // Write headers
+            fileWriter.append("Username,Note Title,Content\n")
+
+            // Export Notes
+            val noteCursor = db.rawQuery("SELECT ${DatabaseHelper.COLUMN_NOTE_USER}, ${DatabaseHelper.COLUMN_TITLE}, ${DatabaseHelper.COLUMN_CONTENT} FROM ${DatabaseHelper.TABLE_NOTES}", null)
+            if (noteCursor.moveToFirst()) {
+                do {
+                    val noteUser = noteCursor.getString(0)
+                    val noteTitle = noteCursor.getString(1)
+                    val noteContent = noteCursor.getString(2)
+                    fileWriter.append("$noteUser,$noteTitle,$noteContent\n")
+                } while (noteCursor.moveToNext())
+            }
+            noteCursor.close()
+
+            fileWriter.flush()
+            fileWriter.close()
+
+            // Inform the user about success
+            Toast.makeText(requireContext(), "User Notes CSV file created: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (e: IOException) {
+            // Handle the error using a Toast
+            Toast.makeText(requireContext(), "Error writing User Notes CSV file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                exportDatabaseToCSV()
+                exportUserDataToCSV()
+                exportUserScoreToCSV()
+                exportUserNotesToCSV()
             } else {
                 Toast.makeText(requireContext(), "Permission denied to write external storage", Toast.LENGTH_SHORT).show() // Inform user of denied permission
             }

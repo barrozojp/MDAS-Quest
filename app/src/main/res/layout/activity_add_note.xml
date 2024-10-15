@@ -39,6 +39,7 @@
         android:hint="Enter the title"
         android:backgroundTint="#D5E9EC"
         android:textColorHint="#3F4555"
+        android:textColor="#000"
         android:maxLines="1"
         android:padding="12sp"
         android:textSize="20sp" />
@@ -53,6 +54,7 @@
         android:background="@drawable/cyan_border"
         android:fontFamily="@font/boldreel"
         android:gravity="top"
+        android:textColor="#000"
         android:textColorHint="#3F4555"
         android:hint="Enter the description"
         android:padding="12dp"

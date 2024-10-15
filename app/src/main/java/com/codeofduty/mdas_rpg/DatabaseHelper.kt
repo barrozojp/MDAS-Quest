@@ -298,6 +298,52 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             db.close() // Close the database
         }
     }
+    fun getAllUserData(): List<Pair<String, String>> {
+        val userList = mutableListOf<Pair<String, String>>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT $COLUMN_USERNAME, $COLUMN_PASSWORD FROM $TABLE_USERS", null)
+
+        while (cursor.moveToNext()) {
+            val username = cursor.getString(0)
+            val password = cursor.getString(1)
+            userList.add(Pair(username, password))
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
+
+    fun getAllUserScores(): List<Triple<String, String, Int>> {
+        val scoreList = mutableListOf<Triple<String, String, Int>>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT $COLUMN_GAME_USERNAME, $COLUMN_OPERATION_DIFFICULTY, $COLUMN_SCORE FROM $TABLE_GAME", null)
+
+        while (cursor.moveToNext()) {
+            val username = cursor.getString(0)
+            val operationDifficulty = cursor.getString(1)
+            val score = cursor.getInt(2)
+            scoreList.add(Triple(username, operationDifficulty, score))
+        }
+        cursor.close()
+        db.close()
+        return scoreList
+    }
+
+    fun getAllUserNotes(): List<Note> {
+        val noteList = mutableListOf<Note>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT $COLUMN_NOTE_USER, $COLUMN_TITLE, $COLUMN_CONTENT FROM $TABLE_NOTES", null)
+
+        while (cursor.moveToNext()) {
+            val username = cursor.getString(0)
+            val title = cursor.getString(1)
+            val content = cursor.getString(2)
+            noteList.add(Note(-1, title, content)) // Using -1 for ID as it's not needed for export
+        }
+        cursor.close()
+        db.close()
+        return noteList
+    }
 
 
 
