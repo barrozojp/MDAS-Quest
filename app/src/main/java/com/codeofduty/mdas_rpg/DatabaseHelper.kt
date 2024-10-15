@@ -9,9 +9,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         const val DATABASE_NAME = "UserDatabase.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3 // Incremented version
         const val TABLE_USERS = "Users"
         const val TABLE_GAME = "game_table"
+        const val TABLE_NOTES = "allnotes" // New table for notes
         const val COLUMN_GAME_ID = "game_id"
         const val COLUMN_OPERATION_DIFFICULTY = "operation_difficulty"
         const val COLUMN_SCORE = "score"
@@ -19,6 +20,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COLUMN_USERNAME = "username"
         const val COLUMN_PASSWORD = "password"
         const val COLUMN_GAME_USERNAME = "game_username"
+        const val COLUMN_TITLE = "title" // New column for note title
+        const val COLUMN_CONTENT = "content" // New column for note content
+        const val COLUMN_NOTE_USER = "note_user" // New column for user reference in notes
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -35,11 +39,20 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 + "$COLUMN_SCORE INTEGER,"
                 + "FOREIGN KEY($COLUMN_GAME_USERNAME) REFERENCES $TABLE_USERS($COLUMN_USERNAME))")
         db.execSQL(createGameTable)
+        // Create Notes table with foreign key
+        val createNotesTable = ("CREATE TABLE $TABLE_NOTES ("
+                + "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "$COLUMN_TITLE TEXT,"
+                + "$COLUMN_CONTENT TEXT,"
+                + "$COLUMN_NOTE_USER TEXT," // New column for user reference
+                + "FOREIGN KEY($COLUMN_NOTE_USER) REFERENCES $TABLE_USERS($COLUMN_USERNAME))") // Foreign key reference
+        db.execSQL(createNotesTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_GAME")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
         onCreate(db)
     }
 
@@ -52,6 +65,78 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val result = db.insert(TABLE_USERS, null, contentValues)
         return result != -1L
     }
+
+    // Note-related methods
+    fun insertNote(note: Note, username: String) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_TITLE, note.title)
+            put(COLUMN_CONTENT, note.content)
+            put(COLUMN_NOTE_USER, username) // Store the username as a foreign key
+        }
+        db.insert(TABLE_NOTES, null, values)
+        db.close()
+    }
+
+    fun getAllNotes(username: String): List<Note> {
+        val noteList = mutableListOf<Note>()
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_NOTE_USER = ?"
+        val cursor = db.rawQuery(query, arrayOf(username)) // Filter notes by username
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
+            val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
+
+            val note = Note(id, title, content)
+            noteList.add(note)
+        }
+        cursor.close()
+        db.close()
+        return noteList
+    }
+
+
+    fun updateNote(note: Note, username: String) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_TITLE, note.title)
+            put(COLUMN_CONTENT, note.content)
+            put(COLUMN_NOTE_USER, username) // Update username if needed
+        }
+        val whereClause = "$COLUMN_ID = ?"
+        val whereArgs = arrayOf(note.id.toString())
+        db.update(TABLE_NOTES, values, whereClause, whereArgs)
+        db.close()
+    }
+
+    fun getNoteByID(noteId: Int): Note {
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_ID = ?"
+        val cursor = db.rawQuery(query, arrayOf(noteId.toString()))
+
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
+            val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
+            cursor.close()
+            db.close()
+            return Note(id, title, content)
+        }
+        cursor.close()
+        db.close()
+        throw Exception("Note not found")
+    }
+
+    fun deleteNote(noteId: Int) {
+        val db = writableDatabase
+        val whereClause = "$COLUMN_ID = ?"
+        val whereArgs = arrayOf(noteId.toString())
+        db.delete(TABLE_NOTES, whereClause, whereArgs)
+        db.close()
+    }
+
 
     fun checkUserExists(username: String): Boolean {
         val db = this.readableDatabase
