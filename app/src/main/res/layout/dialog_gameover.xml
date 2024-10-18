@@ -26,21 +26,12 @@
         android:layout_height="wrap_content"
         android:text="Total Score:"
         android:textColor="#FFFFFF"
-        android:textSize="30sp"
+        android:fontFamily="@font/rantau"
+        android:textSize="50sp"
         android:gravity="center"
         android:layout_below="@id/dialog_title"
         android:layout_marginTop="20dp" />
 
-    <TextView
-        android:id="@+id/dialog_totalTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total Time:"
-        android:textColor="#FFFFFF"
-        android:textSize="30sp"
-        android:layout_below="@id/dialog_totalScore"
-        android:gravity="center"
-        android:layout_marginTop="5dp" />
 
     <ImageView
         android:id="@+id/return_home"
@@ -49,7 +40,7 @@
         android:layout_below="@id/dialog_title"
         android:layout_alignParentStart="true"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="100dp"
         android:src="@drawable/home_gameover" />
 
     <ImageView
@@ -59,6 +50,6 @@
         android:layout_below="@id/dialog_title"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="20dp"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="100dp"
         android:src="@drawable/baseline_replay_24" />
 </RelativeLayout>

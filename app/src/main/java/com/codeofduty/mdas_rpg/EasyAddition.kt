@@ -38,6 +38,8 @@ class EasyAddition : AppCompatActivity() {
     private var tapSoundId: Int = 0
     private lateinit var backgroundMusic: MediaPlayer
     private var correctAnswerCount: Int = 0 // Track correct answers
+    private var bonusHearts: Int = 0 // Track bonus hearts
+    private var bonusPoints: Int = 0 // Track bonus points
     private var heartCounter: Int = 3 // Initialize with 3 hearts
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var operationDifficulty: String
@@ -48,6 +50,7 @@ class EasyAddition : AppCompatActivity() {
         setContentView(binding.root)
 
         databaseHelper = DatabaseHelper(this)
+        binding.timer.text = "60"
 
         // Get the passed operation difficulty
         operationDifficulty = intent.getStringExtra("operation_difficulty") ?: "Unknown"
@@ -140,15 +143,10 @@ class EasyAddition : AppCompatActivity() {
         val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.showSoftInput(binding.etAnswer, InputMethodManager.SHOW_IMPLICIT) // Show the keyboard
 
-        // Initialize the timer
-        timerValue = 0 // Reset timer value
-        handler = Handler()
-        runnable = Runnable {
-            timerValue++
-            updateTimerText() // Update the timer TextView with formatted time
-            handler.postDelayed(runnable, 1000) // Call this again after 1 second
-        }
-        handler.postDelayed(runnable, 1000) // Start the timer after 1 second
+        binding.timer.text = "60"
+
+        // Initialize the 60-second timer after the countdown
+        startTimer()
 
         // Observe text changes in the TextInputEditText
         val answerStream = RxTextView.textChanges(binding.etAnswer)
@@ -184,7 +182,7 @@ class EasyAddition : AppCompatActivity() {
     private fun handleAnswer() {
         // Get the user's answer from the EditText
         val userAnswer = binding.etAnswer.text.toString().toIntOrNull() // Use toIntOrNull for safety
-        val correctAnswer = firstValue +  secondValue
+        val correctAnswer = firstValue + secondValue
 
         // Check if the user's answer is correct
         if (userAnswer == correctAnswer) {
@@ -228,6 +226,9 @@ class EasyAddition : AppCompatActivity() {
 
             binding.scoreCounter.text = "Score: $score" // Update the score display
             generateQuestion() // Generate a new question
+
+            resetTimer() // Reset the timer for the next question
+
         } else {
             wrongAttempts++ // Increment the wrong attempts count
 
@@ -243,6 +244,7 @@ class EasyAddition : AppCompatActivity() {
                 showGameOverDialog()
             } else {
                 generateQuestion() // Generate a new question
+                resetTimer() // Reset the timer when generating a new question after a wrong answer
             }
         }
 
@@ -251,6 +253,9 @@ class EasyAddition : AppCompatActivity() {
     }
 
     private fun showGameOverDialog() {
+        // Stop the timer
+        handler.removeCallbacks(runnable)
+
         // Retrieve the username from SharedPreferences
         val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE) // Use the correct SharedPreferences
         val username = sharedPreferences.getString("username", "") ?: ""
@@ -262,11 +267,8 @@ class EasyAddition : AppCompatActivity() {
         // Inflate the custom layout for the game over dialog
         val dialogView = layoutInflater.inflate(R.layout.dialog_gameover, null)
         val totalScoreTextView = dialogView.findViewById<TextView>(R.id.dialog_totalScore)
-        val totalTimeTextView = dialogView.findViewById<TextView>(R.id.dialog_totalTime)
 
         totalScoreTextView.text = "Total Score: $score"
-        val formattedTime = String.format("%02d:%02d", timerValue / 60, timerValue % 60)
-        totalTimeTextView.text = "Total Time: $formattedTime"
 
         if (!isInserted) {
             totalScoreTextView.text = "Error saving score"
@@ -302,26 +304,62 @@ class EasyAddition : AppCompatActivity() {
         score = 0
         timerValue = 0
         heartCounter = 3 // Reset heartCounter here to ensure logic matches UI
+        correctAnswerCount = 0 // Reset correct answer count
+        bonusHearts = 0 // Reset bonus hearts count
+        bonusPoints = 0 // Reset bonus points count
+        binding.firstValue.text = "?"
+        binding.secondValue.text = "?"
 
         // Reset UI elements
         binding.scoreCounter.text = "Score: $score"
         binding.heartCounter.text = "$heartCounter" // Ensure this matches the reset heartCounter
         binding.etAnswer.text?.clear() // Clear the answer field
-        binding.timer.text = "00:00" // Reset timer display
+        binding.timer.text = "60" // Reset timer display
+
+        // Reset the timer value and update the timer text
+        timerValue = 60
+        binding.timer.text = timerValue.toString() // Set timer to 60 seconds
 
         // Show the countdown dialog again
         showCountdownDialog() // Start the countdown before the game starts
     }
 
+    private fun startTimer() {
+        timerValue = 60 // Start with 60 seconds
+        binding.timer.text = "60"
+
+        handler = Handler()
+        runnable = object : Runnable {
+            override fun run() {
+                timerValue--
+                binding.timer.text = timerValue.toString() // Update the UI with the remaining time
+                if (timerValue > 0) {
+                    handler.postDelayed(this, 1000) // Run again after 1 second
+                } else {
+                    // Timer ran out, decrease hearts and handle timeout
+                    heartCounter--
+                    binding.heartCounter.text = "$heartCounter" // Update hearts in the UI
+                    showHeartLostDialog() // Show heart lost dialog when time runs out
+
+                    if (heartCounter <= 0) {
+                        // Show game over dialog when hearts are zero or below
+                        showGameOverDialog()
+                    } else {
+                        generateQuestion() // Generate a new question
+                        resetTimer() // Reset the timer for the next question
+                    }
+                }
+            }
+        }
+
+        handler.postDelayed(runnable, 1000) // Start after 1 second
+    }
 
     // Method to update the timer TextView
-    private fun updateTimerText() {
-        val minutes = timerValue / 60 // Calculate minutes
-        val seconds = timerValue % 60 // Calculate seconds
-
-        // Format the time as MM:SS
-        val formattedTime = String.format("%02d:%02d", minutes, seconds)
-        binding.timer.text = "$formattedTime" // Update the timer TextView
+    private fun resetTimer() {
+        handler.removeCallbacks(runnable) // Stop the current timer
+        timerValue = 60 // Reset the timer value to 60 seconds
+        startTimer() // Start a new timer for the next question
     }
 
     private fun showHeartLostDialog() {
