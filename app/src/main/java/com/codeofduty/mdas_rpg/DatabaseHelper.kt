@@ -183,29 +183,32 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
 
-    fun getLeaderboard(username: String): List<LeaderboardItem> {
+    fun getLeaderboard(): List<LeaderboardItem> {
         val leaderboard = mutableListOf<LeaderboardItem>()
         val db = this.readableDatabase
 
-        // Select records for the specific user by username
-        val query = "SELECT $COLUMN_OPERATION_DIFFICULTY, $COLUMN_SCORE " +
-                "FROM $TABLE_GAME WHERE $COLUMN_GAME_USERNAME = ? " + // Filter by username
-                "ORDER BY $COLUMN_SCORE DESC " + // Order by score descending
-                "LIMIT 10" // Limit the results to 10
+        // Select all records and join with the Users table to get the username
+        val query = """
+        SELECT $COLUMN_GAME_USERNAME, $COLUMN_OPERATION_DIFFICULTY, $COLUMN_SCORE 
+        FROM $TABLE_GAME
+        ORDER BY $COLUMN_SCORE DESC
+        LIMIT 10
+    """
 
-        val cursor = db.rawQuery(query, arrayOf(username))
+        val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
-            var rank = 1
             do {
+                val usernameIndex = cursor.getColumnIndex(COLUMN_GAME_USERNAME)
                 val difficultyIndex = cursor.getColumnIndex(COLUMN_OPERATION_DIFFICULTY)
                 val scoreIndex = cursor.getColumnIndex(COLUMN_SCORE)
 
-                // Check if column indexes are valid
-                if (difficultyIndex != -1 && scoreIndex != -1) {
+                if (usernameIndex != -1 && difficultyIndex != -1 && scoreIndex != -1) {
+                    val username = cursor.getString(usernameIndex)
                     val difficulty = cursor.getString(difficultyIndex)
                     val score = cursor.getInt(scoreIndex).toString()
-                    leaderboard.add(LeaderboardItem(rank.toString(), difficulty, score))
-                    rank++
+
+                    // Add each user with their respective data to the leaderboard
+                    leaderboard.add(LeaderboardItem(username, difficulty, score))
                 }
             } while (cursor.moveToNext())
         }

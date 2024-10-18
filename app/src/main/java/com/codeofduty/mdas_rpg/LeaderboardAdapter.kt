@@ -10,7 +10,7 @@ class LeaderboardAdapter(private val leaderboardItems: List<LeaderboardItem>) :
     RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {
 
     class LeaderboardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val rank: TextView = itemView.findViewById(R.id.rank)
+        val name: TextView = itemView.findViewById(R.id.name)
         val difficulty: TextView = itemView.findViewById(R.id.operationdifficulty)
         val totalScore: TextView = itemView.findViewById(R.id.total_score)
     }
@@ -23,7 +23,7 @@ class LeaderboardAdapter(private val leaderboardItems: List<LeaderboardItem>) :
 
     override fun onBindViewHolder(holder: LeaderboardViewHolder, position: Int) {
         val item = leaderboardItems[position]
-        holder.rank.text = item.rank
+        holder.name.text = item.name
         holder.difficulty.text = item.difficulty
         holder.totalScore.text = item.totalScore
     }

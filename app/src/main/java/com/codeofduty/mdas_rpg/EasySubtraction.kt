@@ -408,9 +408,7 @@ class EasySubtraction : AppCompatActivity() {
         // Set up the click listener for the return home button
         returnHomeButton.setOnClickListener {
             dialog.dismiss() // Dismiss the dialog
-            finish() // Finish current activity
-            val intent = Intent(this, MainActivity::class.java) // Assuming MainActivity is your home screen
-            startActivity(intent) // Navigate to MainActivity
+            showGameOverDialog()
         }
 
         // Show the dialog
