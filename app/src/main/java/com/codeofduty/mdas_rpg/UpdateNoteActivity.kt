@@ -26,8 +26,6 @@ class UpdateNoteActivity : AppCompatActivity() {
         currentUsername = intent.getStringExtra("USERNAME") ?: ""
         note_id = intent.getStringExtra("note_id") ?: ""
 
-        // Show a Toast to verify that values are correctly passed
-        Toast.makeText(this, "Note ID: $note_id, Username: $currentUsername", Toast.LENGTH_SHORT).show()
 
         if (note_id.isEmpty()) {
             finish()
@@ -38,13 +36,15 @@ class UpdateNoteActivity : AppCompatActivity() {
         getNoteFromFirebase(note_id)
 
         binding.updateSaveButton.setOnClickListener {
-            val newTitle = binding.updateTitleEditText.text.toString()
-            val newContent = binding.updateContentEditText.text.toString()
+            // Directly pass the updated content and title to the FirebaseNote
+            val updatedNote = FirebaseNote(
+                binding.updateContentEditText.text.toString(), // Content
+                note_id, // Existing note_id
+                currentUsername, // Username
+                binding.updateTitleEditText.text.toString() // Title
+            )
 
-            // Create a new FirebaseNote with updated content
-            val updatedNote = FirebaseNote(newContent, note_id, currentUsername, newTitle)
-
-            // Update the note in the allnotes table in Firebase
+            // Update the note in Firebase
             updateNoteInFirebase(updatedNote)
 
             // Show a Toast when saving changes
@@ -81,7 +81,7 @@ class UpdateNoteActivity : AppCompatActivity() {
         // Use the existing note_id to reference the node in Firebase
         val noteRef = database.child("allnotes").child(updatedNote.note_id)
 
-        // Update the note's data using the same note_id
+        // Update the note's data using the same note_id to ensure no new node is created
         noteRef.setValue(updatedNote).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(this, "Note updated successfully", Toast.LENGTH_SHORT).show()
@@ -90,6 +90,4 @@ class UpdateNoteActivity : AppCompatActivity() {
             }
         }
     }
-
-
 }

@@ -44,8 +44,6 @@ class NotesAdapter(private var notes: List<FirebaseNote>, private val context: C
         setupLoadingDialog(holder.itemView.context) // Initialize Loading Dialog
 
         holder.updateButton.setOnClickListener {
-            // Show a Toast to verify the note_id
-            Toast.makeText(holder.itemView.context, "Passing Note ID: ${note.note_id}", Toast.LENGTH_SHORT).show()
 
             val intent = Intent(holder.itemView.context, UpdateNoteActivity::class.java).apply {
                 putExtra("note_id", note.note_id)  // Make sure the correct note_id is passed
