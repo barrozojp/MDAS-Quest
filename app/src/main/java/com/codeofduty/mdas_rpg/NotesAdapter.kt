@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
@@ -42,14 +43,17 @@ class NotesAdapter(private var notes: List<FirebaseNote>, private val context: C
 
         setupLoadingDialog(holder.itemView.context) // Initialize Loading Dialog
 
-        // Start UpdateNoteActivity with note ID and username
         holder.updateButton.setOnClickListener {
+            // Show a Toast to verify the note_id
+            Toast.makeText(holder.itemView.context, "Passing Note ID: ${note.note_id}", Toast.LENGTH_SHORT).show()
+
             val intent = Intent(holder.itemView.context, UpdateNoteActivity::class.java).apply {
-                putExtra("note_id", note.note_id)
-                putExtra("USERNAME", username)
+                putExtra("note_id", note.note_id)  // Make sure the correct note_id is passed
+                putExtra("USERNAME", username)  // Ensure username is also passed
             }
             holder.itemView.context.startActivity(intent)
         }
+
 
         holder.deleteButton.setOnClickListener {
             loadingDialog.show() // Show loading before deletion
