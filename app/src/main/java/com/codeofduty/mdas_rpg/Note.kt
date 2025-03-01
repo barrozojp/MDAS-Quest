@@ -1,3 +1,3 @@
 package com.codeofduty.mdas_rpg
 
-data class Note(val id: Int, val title: String, val content: String)
+data class Note(val note_id: Int, val title: String, val content: String)

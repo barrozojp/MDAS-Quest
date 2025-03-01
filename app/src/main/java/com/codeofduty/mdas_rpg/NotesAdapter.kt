@@ -39,14 +39,14 @@ class NotesAdapter(private var notes: List<Note>, private val context: Context, 
         // Start UpdateNoteActivity with note ID and username
         holder.updateButton.setOnClickListener {
             val intent = Intent(holder.itemView.context, UpdateNoteActivity::class.java).apply {
-                putExtra("note_id", note.id)
+                putExtra("note_id", note.note_id)
                 putExtra("USERNAME", username) // Pass the username
             }
             holder.itemView.context.startActivity(intent)
         }
 
         holder.deleteButton.setOnClickListener {
-            db.deleteNote(note.id)
+            db.deleteNote(note.note_id)
             // Refresh data for the specific user
             refreshData(db.getAllNotes(username)) // Pass username here
             Toast.makeText(holder.itemView.context, "Note Deleted", Toast.LENGTH_SHORT).show()

@@ -10,14 +10,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codeofduty.mdas_rpg.databinding.FragmentNotepadBinding
+import com.google.firebase.database.*
 
 class NotepadFragment : Fragment() {
 
     private var _binding: FragmentNotepadBinding? = null
     private val binding get() = _binding!!
-    private lateinit var db: DatabaseHelper // Updated to use DatabaseHelper
+    private lateinit var db: DatabaseHelper
     private lateinit var notesAdapter: NotesAdapter
-    private lateinit var currentUsername: String // To store the logged-in user's username
+    private lateinit var firebaseDb: DatabaseReference
+    private lateinit var currentUsername: String
+    private val notesList = mutableListOf<Note>() // Merged list for SQLite and Firebase notes
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,50 +33,70 @@ class NotepadFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize the DatabaseHelper
         db = DatabaseHelper(requireContext())
+        firebaseDb = FirebaseDatabase.getInstance().getReference("allnotes")
 
-        // Get the logged-in user's username from SharedPreferences
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", AppCompatActivity.MODE_PRIVATE)
         currentUsername = sharedPreferences.getString("username", "") ?: ""
 
-
-        // Initialize the notes adapter, passing the currentUsername
-        notesAdapter = NotesAdapter(db.getAllNotes(currentUsername), requireContext(), currentUsername) // Pass currentUsername here
-
+        notesAdapter = NotesAdapter(notesList, requireContext(), currentUsername)
         binding.notesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.notesRecyclerView.adapter = notesAdapter
 
-        // Check if notes are empty and toggle visibility
-        toggleEmptyState()
-
         binding.addButton.setOnClickListener {
             val intent = Intent(requireContext(), AddNoteActivity::class.java).apply {
-                putExtra("username", currentUsername) // Pass the username to AddNoteActivity
+                putExtra("username", currentUsername)
             }
             startActivity(intent)
         }
+
+        fetchNotes() // Fetch notes from both SQLite and Firebase
+    }
+
+    private fun fetchNotes() {
+        notesList.clear()
+
+        // Fetch from SQLite
+        notesList.addAll(db.getAllNotes(currentUsername))
+
+        // Fetch from Firebase
+        firebaseDb.orderByChild("note_user").equalTo(currentUsername).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (noteSnapshot in snapshot.children) {
+                    val note_id = noteSnapshot.child("note_id").getValue(String::class.java) ?: ""
+                    val title = noteSnapshot.child("title").getValue(String::class.java) ?: ""
+                    val content = noteSnapshot.child("content").getValue(String::class.java) ?: ""
+
+                    val note = Note(id.hashCode(), title, content) // Convert Firebase ID to Int hash
+                    if (!notesList.any { it.title == note.title && it.content == note.content }) {
+                        notesList.add(note) // Avoid duplicate notes
+                    }
+                }
+                notesAdapter.refreshData(notesList)
+                toggleEmptyState()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), "Failed to fetch notes from Firebase", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun toggleEmptyState() {
-        // Check if the notes list is empty
         if (notesAdapter.itemCount == 0) {
-            binding.animEmpty.visibility = View.VISIBLE // Show animation
-            binding.tvEmpty.visibility = View.VISIBLE // Show text
-            binding.notesRecyclerView.visibility = View.GONE // Hide RecyclerView
+            binding.animEmpty.visibility = View.VISIBLE
+            binding.tvEmpty.visibility = View.VISIBLE
+            binding.notesRecyclerView.visibility = View.GONE
         } else {
-            binding.animEmpty.visibility = View.GONE // Hide animation
-            binding.tvEmpty.visibility = View.GONE // Hide text
-            binding.notesRecyclerView.visibility = View.VISIBLE // Show RecyclerView
+            binding.animEmpty.visibility = View.GONE
+            binding.tvEmpty.visibility = View.GONE
+            binding.notesRecyclerView.visibility = View.VISIBLE
         }
     }
 
     override fun onResume() {
         super.onResume()
-        notesAdapter.refreshData(db.getAllNotes(currentUsername)) // Pass currentUsername here to refresh notes
-
-        // Check if notes are empty and toggle visibility
-        toggleEmptyState()
+        fetchNotes() // Refresh notes from both SQLite and Firebase
     }
 
     override fun onDestroyView() {

@@ -85,11 +85,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val cursor = db.rawQuery(query, arrayOf(username)) // Filter notes by username
 
         while (cursor.moveToNext()) {
-            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val note_id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
             val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
             val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
 
-            val note = Note(id, title, content)
+            val note = Note(note_id, title, content)
             noteList.add(note)
         }
         cursor.close()
@@ -106,33 +106,33 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COLUMN_NOTE_USER, username) // Update username if needed
         }
         val whereClause = "$COLUMN_ID = ?"
-        val whereArgs = arrayOf(note.id.toString())
+        val whereArgs = arrayOf(note.note_id.toString())
         db.update(TABLE_NOTES, values, whereClause, whereArgs)
         db.close()
     }
 
-    fun getNoteByID(noteId: Int): Note {
+    fun getNoteByID(note_id: Int): Note {
         val db = readableDatabase
         val query = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_ID = ?"
-        val cursor = db.rawQuery(query, arrayOf(noteId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(note_id.toString()))
 
         if (cursor.moveToFirst()) {
-            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val note_id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
             val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
             val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
             cursor.close()
             db.close()
-            return Note(id, title, content)
+            return Note(note_id, title, content)
         }
         cursor.close()
         db.close()
         throw Exception("Note not found")
     }
 
-    fun deleteNote(noteId: Int) {
+    fun deleteNote(note_id: Int) {
         val db = writableDatabase
         val whereClause = "$COLUMN_ID = ?"
-        val whereArgs = arrayOf(noteId.toString())
+        val whereArgs = arrayOf(note_id.toString())
         db.delete(TABLE_NOTES, whereClause, whereArgs)
         db.close()
     }
