@@ -30,21 +30,19 @@ class AddNoteActivity : AppCompatActivity() {
             val content = binding.contentEditText.text.toString().trim()
 
             if (title.isNotEmpty() && content.isNotEmpty()) {
-                val note = Note(0, title, content)
-
-                // Save to SQLite
-                db.insertNote(note, currentUsername)
+                // Insert into SQLite and get the generated note_id
+                val noteId: Long = db.insertNote(Note(0, title, content), currentUsername)
 
                 // Save to Firebase
-                val note_id = firebaseDb.push().key // Generate unique ID
-                if (note_id != null) {
+                val firebaseNoteId = firebaseDb.push().key // Generate unique Firebase ID
+                if (firebaseNoteId != null) {
                     val noteData = hashMapOf(
-                        "note_id" to note_id,
+                        "note_id" to noteId.toString(),  // Corrected SQLite ID
                         "title" to title,
                         "content" to content,
                         "note_user" to currentUsername
                     )
-                    firebaseDb.child(note_id).setValue(noteData)
+                    firebaseDb.child(firebaseNoteId).setValue(noteData)
                         .addOnSuccessListener {
                             Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show()
                             finish()

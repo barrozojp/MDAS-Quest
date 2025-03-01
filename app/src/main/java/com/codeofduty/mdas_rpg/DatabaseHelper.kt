@@ -67,15 +67,19 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     // Note-related methods
-    fun insertNote(note: Note, username: String) {
-        val db = writableDatabase
+    fun insertNote(note: Note, username: String): Long {
+        val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_TITLE, note.title)
-            put(COLUMN_CONTENT, note.content)
-            put(COLUMN_NOTE_USER, username) // Store the username as a foreign key
+            put("title", note.title)
+            put("content", note.content)
+            put("note_user", username)
         }
-        db.insert(TABLE_NOTES, null, values)
+
+        // Insert and get the generated row ID
+        val noteId = db.insert("allnotes", null, values)
         db.close()
+
+        return noteId // Return the generated ID
     }
 
     fun getAllNotes(username: String): List<Note> {

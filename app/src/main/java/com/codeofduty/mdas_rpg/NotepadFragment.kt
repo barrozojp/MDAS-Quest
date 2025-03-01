@@ -16,16 +16,15 @@ class NotepadFragment : Fragment() {
 
     private var _binding: FragmentNotepadBinding? = null
     private val binding get() = _binding!!
-    private lateinit var db: DatabaseHelper
     private lateinit var notesAdapter: NotesAdapter
     private lateinit var firebaseDb: DatabaseReference
     private lateinit var currentUsername: String
-    private val notesList = mutableListOf<Note>() // Merged list for SQLite and Firebase notes
+    private val notesList = mutableListOf<Note>() // List only for Firebase notes
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentNotepadBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -33,7 +32,6 @@ class NotepadFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        db = DatabaseHelper(requireContext())
         firebaseDb = FirebaseDatabase.getInstance().getReference("allnotes")
 
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", AppCompatActivity.MODE_PRIVATE)
@@ -50,16 +48,12 @@ class NotepadFragment : Fragment() {
             startActivity(intent)
         }
 
-        fetchNotes() // Fetch notes from both SQLite and Firebase
+        fetchFirebaseNotes() // Fetch notes only from Firebase
     }
 
-    private fun fetchNotes() {
+    private fun fetchFirebaseNotes() {
         notesList.clear()
 
-        // Fetch from SQLite
-        notesList.addAll(db.getAllNotes(currentUsername))
-
-        // Fetch from Firebase
         firebaseDb.orderByChild("note_user").equalTo(currentUsername).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (noteSnapshot in snapshot.children) {
@@ -67,7 +61,7 @@ class NotepadFragment : Fragment() {
                     val title = noteSnapshot.child("title").getValue(String::class.java) ?: ""
                     val content = noteSnapshot.child("content").getValue(String::class.java) ?: ""
 
-                    val note = Note(id.hashCode(), title, content) // Convert Firebase ID to Int hash
+                    val note = Note(note_id.hashCode(), title, content) // Convert Firebase ID to Int hash
                     if (!notesList.any { it.title == note.title && it.content == note.content }) {
                         notesList.add(note) // Avoid duplicate notes
                     }
@@ -96,7 +90,7 @@ class NotepadFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        fetchNotes() // Refresh notes from both SQLite and Firebase
+        fetchFirebaseNotes() // Refresh notes only from Firebase
     }
 
     override fun onDestroyView() {
