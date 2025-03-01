@@ -8,7 +8,7 @@ import android.os.Handler
 
 class SplashScreen : AppCompatActivity() {
 
-    private val SPLASH_TIME: Long = 6000
+    private val SPLASH_TIME: Long = 3000 // Reduced for faster testing
     private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,16 +19,16 @@ class SplashScreen : AppCompatActivity() {
         sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
 
         Handler().postDelayed({
-            // Check if the user is logged in
-            val userId = sharedPreferences.getInt("loggedInUserId", -1)
-            if (userId != -1) {
-                // User is logged in, navigate to MainActivity
+            val userId = sharedPreferences.getString("loggedInUserId", null) // Get as String
+
+            if (userId != null) {
+                // User is logged in, go to MainActivity
                 startActivity(Intent(this, MainActivity::class.java))
             } else {
-                // No user is logged in, navigate to LoginRegister
+                // No user is logged in, go to LoginRegister
                 startActivity(Intent(this, LoginRegister::class.java))
             }
-            finish() // Call finish() to prevent going back to the splash screen
+            finish() // Prevent returning to SplashScreen
         }, SPLASH_TIME)
     }
 }

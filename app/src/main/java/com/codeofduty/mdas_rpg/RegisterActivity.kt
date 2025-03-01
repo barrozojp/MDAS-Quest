@@ -14,6 +14,9 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.R
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+
 import com.codeofduty.mdas_rpg.databinding.ActivityRegisterBinding
 import com.jakewharton.rxbinding2.widget.RxTextView
 
@@ -23,6 +26,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var soundPool: SoundPool
     private var tapSoundId: Int = 0
+    private lateinit var database: DatabaseReference
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var loadingDialog: Dialog
 
@@ -32,6 +36,8 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        database = FirebaseDatabase.getInstance().reference
 
         // Initialize the database helper
         dbHelper = DatabaseHelper(this)
@@ -87,33 +93,64 @@ class RegisterActivity : AppCompatActivity() {
 
         // Register button click event
         binding.btnLogin.setOnClickListener {
-            // Show loading dialog
             loadingDialog.show()
 
-            // Delay for 2 seconds before executing the registration logic
-            Handler(Looper.getMainLooper()).postDelayed({
-                val username = binding.etUsername.text.toString()
-                val password = binding.etPassword.text.toString()
+            val username = binding.etUsername.text.toString()
+            val password = binding.etPassword.text.toString()
 
-                // Check if the user already exists
-                if (dbHelper.checkUserExists(username)) {
-                    Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
-                } else {
-                    val isInserted = dbHelper.insertUser(username, password)
-                    if (isInserted) {
-                        Toast.makeText(this, "Registration Complete", Toast.LENGTH_SHORT).show()
+            database.child("users").get()
+                .addOnSuccessListener { dataSnapshot ->
+                    var usernameExists = false
 
-                        // Navigate to LoginActivity
-                        val intent = Intent(this, LoginActivity::class.java)
-                        startActivity(intent)
+                    for (userSnapshot in dataSnapshot.children) {
+                        val existingUsername = userSnapshot.child("username").value.toString()
+                        if (existingUsername == username) {
+                            usernameExists = true
+                            break
+                        }
+                    }
+
+                    if (usernameExists) {
+                        Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
+                        loadingDialog.dismiss()
                     } else {
-                        Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show()
+                        if (dbHelper.checkUserExists(username)) {
+                            Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
+                            loadingDialog.dismiss()
+                        } else {
+                            val userId = database.child("users").push().key
+
+                            if (userId != null) {
+                                val userMap = hashMapOf(
+                                    "userId" to userId,
+                                    "username" to username,
+                                    "password" to password
+                                )
+
+                                database.child("users").child(userId).setValue(userMap)
+                                    .addOnSuccessListener {
+                                        dbHelper.insertUser(username, password)
+                                        Toast.makeText(this, "Registration Complete", Toast.LENGTH_SHORT).show()
+
+                                        loadingDialog.dismiss()
+                                        startActivity(Intent(this, LoginActivity::class.java))
+                                        finish()
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(this, "Failed to save user to Firebase!", Toast.LENGTH_SHORT).show()
+                                        loadingDialog.dismiss()
+                                    }
+                            } else {
+                                Toast.makeText(this, "Error generating user ID", Toast.LENGTH_SHORT).show()
+                                loadingDialog.dismiss()
+                            }
+                        }
                     }
                 }
-
-                // Dismiss the loading dialog after the operation
-                loadingDialog.dismiss()
-            }, 2000) // 2-second delay
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error checking username!", Toast.LENGTH_SHORT).show()
+                    loadingDialog.dismiss()
+                }
         }
 
         binding.backTv.setOnClickListener {

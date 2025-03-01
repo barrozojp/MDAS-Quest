@@ -6,16 +6,17 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.SoundPool
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.codeofduty.mdas_rpg.R
 import com.codeofduty.mdas_rpg.databinding.ActivityLoginBinding
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.jakewharton.rxbinding2.widget.RxTextView
 
 @SuppressLint("CheckResult")
@@ -27,6 +28,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var loadingDialog: Dialog
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var database: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +36,11 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
         sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
 
-        // Initialize the database helper
+        // Initialize SQLite Database Helper
         dbHelper = DatabaseHelper(this)
+
+        // Initialize Firebase Database
+        database = FirebaseDatabase.getInstance().reference
 
         // Set up loading dialog
         setupLoadingDialog()
@@ -57,13 +62,13 @@ class LoginActivity : AppCompatActivity() {
         // Username Validation (minimum 6 characters)
         val usernameStream = RxTextView.textChanges(binding.etUsername)
             .skipInitialValue()
-            .map { username -> username.isEmpty() || username.length < 6 } // Add length check
+            .map { username -> username.isEmpty() || username.length < 6 }
         usernameStream.subscribe { showTextMinimalAlert(it, "Username") }
 
         // Password Validation (minimum 6 characters)
         val passwordStream = RxTextView.textChanges(binding.etPassword)
             .skipInitialValue()
-            .map { password -> password.isEmpty() || password.length < 6 } // Add length check
+            .map { password -> password.isEmpty() || password.length < 6 }
         passwordStream.subscribe { showTextMinimalAlert(it, "Password") }
 
         // Button Enable True or False
@@ -80,61 +85,67 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Login button click event
-
         binding.btnLogin.setOnClickListener {
-            // Show loading dialog
             loadingDialog.show()
 
-            // Delay for 2 seconds before checking login
-            Handler(Looper.getMainLooper()).postDelayed({
-                val username = binding.etUsername.text.toString()
-                val password = binding.etPassword.text.toString()
+            val username = binding.etUsername.text.toString()
+            val password = binding.etPassword.text.toString()
 
-                // Check credentials in SQLite
-                if (dbHelper.checkUserCredentials(username, password)) {
-                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+            database.child("users").get()
+                .addOnSuccessListener { dataSnapshot ->
+                    var userFound = false
+                    var userId: String? = null
 
-                    // Get the user ID
-                    val userId = dbHelper.getUserId(username) // Assuming this method returns the correct userId
+                    for (userSnapshot in dataSnapshot.children) {
+                        val existingUsername = userSnapshot.child("username").value.toString()
+                        val existingPassword = userSnapshot.child("password").value.toString()
 
-                    // Save user ID to SharedPreferences
-                    sharedPreferences.edit().putInt("loggedInUserId", userId).apply()
+                        if (existingUsername == username && existingPassword == password) {
+                            userFound = true
+                            userId = userSnapshot.child("userId").value.toString()
+                            break
+                        }
+                    }
 
-                    // Save the username to SharedPreferences
-                    sharedPreferences.edit().putString("username", username).apply()
+                    if (userFound) {
+                        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
 
-                    // Navigate to MainActivity
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // Call finish() to prevent going back to the login screen
-                } else {
-                    Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
+                        sharedPreferences.edit().putString("loggedInUserId", userId).apply()
+                        sharedPreferences.edit().putString("username", username).apply()
+
+                        // Sync to SQLite if missing
+                        if (!dbHelper.checkUserExists(username)) {
+                            dbHelper.insertUser(username, password)
+                        }
+
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
+                    }
+
+                    loadingDialog.dismiss()
                 }
-
-
-                // Dismiss loading dialog
-                loadingDialog.dismiss()
-            }, 2000) // 2-second delay
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error checking credentials!", Toast.LENGTH_SHORT).show()
+                    loadingDialog.dismiss()
+                }
         }
 
         binding.backTv.setOnClickListener {
-            finish() // or implement any navigation logic if needed
+            finish()
         }
     }
 
-    // Set up the loading dialog
     private fun setupLoadingDialog() {
         loadingDialog = Dialog(this)
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_loading, null)
         loadingDialog.setContentView(dialogView)
-        loadingDialog.setCancelable(false) // Make it non-cancelable while loading
-        loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent) // Transparent background
+        loadingDialog.setCancelable(false)
+        loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 
-
-    // Detect touch events and play the tap sound
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        // Play the tap sound when the user touches the screen
         if (ev?.action == MotionEvent.ACTION_DOWN) {
             soundPool.play(tapSoundId, 1f, 1f, 1, 0, 1f)
         }
