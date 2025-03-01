@@ -8,17 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class NotesAdapter(private var notes: List<Note>, private val context: Context, private val username: String) :
+class NotesAdapter(private var notes: List<FirebaseNote>, private val context: Context, private val username: String) :
     RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
 
-    private val db: DatabaseHelper = DatabaseHelper(context)
     private lateinit var loadingDialog: Dialog
 
     class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -56,26 +54,26 @@ class NotesAdapter(private var notes: List<Note>, private val context: Context, 
         holder.deleteButton.setOnClickListener {
             loadingDialog.show() // Show loading before deletion
 
-            // Delete from SQLite
-            db.deleteNote(note.note_id)
-
-            // Delete from Firebase
+            // Directly delete from Firebase
             val firebaseDb = FirebaseDatabase.getInstance().getReference("allnotes")
-            firebaseDb.orderByChild("note_id").equalTo(note.note_id.toString())
+            firebaseDb.orderByChild("note_id").equalTo(note.note_id)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        for (noteSnapshot in snapshot.children) {
-                            noteSnapshot.ref.removeValue()
+                        if (snapshot.exists()) {
+                            // Iterate over the snapshot to delete the correct note
+                            for (noteSnapshot in snapshot.children) {
+                                noteSnapshot.ref.removeValue() // Remove from Firebase
+                            }
+                            // Refresh the RecyclerView list after deletion (remove locally)
+                            refreshData(notes.filter { it.note_id != note.note_id })
+                            loadingDialog.dismiss() // Dismiss loading
+                        } else {
+                            loadingDialog.dismiss() // Dismiss loading if note doesn't exist
                         }
-                        // Refresh the RecyclerView list after deletion
-                        refreshData(db.getAllNotes(username))
-                        loadingDialog.dismiss() // Dismiss loading
-                        Toast.makeText(holder.itemView.context, "Note Deleted", Toast.LENGTH_SHORT).show()
                     }
 
                     override fun onCancelled(error: DatabaseError) {
                         loadingDialog.dismiss() // Dismiss if error occurs
-                        Toast.makeText(holder.itemView.context, "Failed to delete from Firebase", Toast.LENGTH_SHORT).show()
                     }
                 })
         }
@@ -89,7 +87,7 @@ class NotesAdapter(private var notes: List<Note>, private val context: Context, 
         loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 
-    fun refreshData(newNotes: List<Note>) {
+    fun refreshData(newNotes: List<FirebaseNote>) {
         notes = newNotes
         notifyDataSetChanged()
     }

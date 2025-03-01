@@ -19,7 +19,7 @@ class NotepadFragment : Fragment() {
     private lateinit var notesAdapter: NotesAdapter
     private lateinit var firebaseDb: DatabaseReference
     private lateinit var currentUsername: String
-    private val notesList = mutableListOf<Note>() // List only for Firebase notes
+    private val notesList = mutableListOf<FirebaseNote>() // List of FirebaseNote
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,13 +57,13 @@ class NotepadFragment : Fragment() {
         firebaseDb.orderByChild("note_user").equalTo(currentUsername).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (noteSnapshot in snapshot.children) {
-                    val note_id = noteSnapshot.child("note_id").getValue(String::class.java) ?: ""
-                    val title = noteSnapshot.child("title").getValue(String::class.java) ?: ""
-                    val content = noteSnapshot.child("content").getValue(String::class.java) ?: ""
+                    val note = noteSnapshot.getValue(FirebaseNote::class.java) // Get FirebaseNote object directly
 
-                    val note = Note(note_id.hashCode(), title, content) // Convert Firebase ID to Int hash
-                    if (!notesList.any { it.title == note.title && it.content == note.content }) {
-                        notesList.add(note) // Avoid duplicate notes
+                    if (note != null) {
+                        // Check for duplicates based on note_id
+                        if (!notesList.any { it.note_id == note.note_id }) {
+                            notesList.add(note) // Add the note to the list
+                        }
                     }
                 }
                 notesAdapter.refreshData(notesList)
