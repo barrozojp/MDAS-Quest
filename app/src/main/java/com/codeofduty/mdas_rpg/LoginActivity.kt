@@ -113,6 +113,9 @@ class LoginActivity : AppCompatActivity() {
                         sharedPreferences.edit().putString("loggedInUserId", userId).apply()
                         sharedPreferences.edit().putString("username", username).apply()
 
+                        // Show the userId in a toast
+                        Toast.makeText(this, "User ID: $userId", Toast.LENGTH_SHORT).show()
+
                         // Sync to SQLite if missing
                         if (!dbHelper.checkUserExists(username)) {
                             dbHelper.insertUser(username, password)

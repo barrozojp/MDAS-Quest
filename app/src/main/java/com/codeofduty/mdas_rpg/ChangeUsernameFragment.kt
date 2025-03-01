@@ -15,13 +15,15 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import androidx.fragment.app.Fragment
 import com.codeofduty.mdas_rpg.databinding.FragmentChangeUsernameBinding
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 @SuppressLint("CheckResult")
 class ChangeUsernameFragment : Fragment() {
 
     private lateinit var binding: FragmentChangeUsernameBinding
     private lateinit var loadingDialog: Dialog
-    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,8 +32,8 @@ class ChangeUsernameFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = FragmentChangeUsernameBinding.inflate(inflater, container, false)
 
-        // Initialize DatabaseHelper
-        dbHelper = DatabaseHelper(requireContext())
+        // Initialize Firebase Database
+        database = FirebaseDatabase.getInstance().reference
 
         // Set up loading dialog
         setupLoadingDialog()
@@ -76,33 +78,40 @@ class ChangeUsernameFragment : Fragment() {
             val newUsername = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
 
+            // Retrieve the userId from SharedPreferences
+            val userId = sharedPreferences.getString("loggedInUserId", "") ?: ""
+
             // Check if password is correct for the logged-in user
-            if (dbHelper.checkUserCredentials(currentUsername, password)) {
-                // Update the username in the database
-                val updateSuccess = dbHelper.updateUsername(currentUsername, newUsername)
+            val userRef = database.child("users").child(userId)
+            userRef.get().addOnSuccessListener { snapshot ->
+                val existingPassword = snapshot.child("password").value.toString()
 
-                // Dismiss the loading dialog after a delay
-                Handler(Looper.getMainLooper()).postDelayed({
-                    loadingDialog.dismiss()
+                if (existingPassword == password) {
+                    // Update the username in Firebase
+                    userRef.child("username").setValue(newUsername).addOnCompleteListener { task ->
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            loadingDialog.dismiss()
 
-                    if (updateSuccess) {
-                        // Update SharedPreferences with the new username
-                        sharedPreferences.edit().putString("username", newUsername).apply()
-                        binding.tvUsername.text = newUsername // Update displayed username
-                        Toast.makeText(requireContext(), "Username updated successfully!", Toast.LENGTH_SHORT).show()
+                            if (task.isSuccessful) {
+                                // Update SharedPreferences with the new username
+                                sharedPreferences.edit().putString("username", newUsername).apply()
+                                binding.tvUsername.text = newUsername // Update displayed username
+                                Toast.makeText(requireContext(), "Username updated successfully!", Toast.LENGTH_SHORT).show()
 
-                        // Restart the fragment
-                        restartFragment()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to update username.", Toast.LENGTH_SHORT).show()
+                                // Restart the fragment
+                                restartFragment()
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to update username.", Toast.LENGTH_SHORT).show()
+                            }
+                        }, 2000) // 2-second delay
                     }
-                }, 2000) // 2-second delay
-            } else {
-                // Dismiss the loading dialog after a delay
-                Handler(Looper.getMainLooper()).postDelayed({
-                    loadingDialog.dismiss()
-                    Toast.makeText(requireContext(), "Incorrect password.", Toast.LENGTH_SHORT).show()
-                }, 2000) // 2-second delay
+                } else {
+                    // Dismiss the loading dialog after a delay
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        loadingDialog.dismiss()
+                        Toast.makeText(requireContext(), "Incorrect password.", Toast.LENGTH_SHORT).show()
+                    }, 2000) // 2-second delay
+                }
             }
         }
 
@@ -124,6 +133,7 @@ class ChangeUsernameFragment : Fragment() {
             .replace(R.id.fragment_container, ChangeUsernameFragment()) // Ensure 'fragment_container' is the correct ID for your fragment container
             .commit()
     }
+
     private fun showTextMinimalAlert(isNotValid: Boolean, text: String) {
         when (text) {
             "Username" -> binding.etUsername.error = if (isNotValid) "$text must be at least 6 characters!" else null

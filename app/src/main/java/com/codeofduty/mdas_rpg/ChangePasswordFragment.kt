@@ -14,12 +14,14 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import androidx.fragment.app.Fragment
 import com.codeofduty.mdas_rpg.databinding.FragmentChangePasswordBinding
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class ChangePasswordFragment : Fragment() {
 
     private lateinit var binding: FragmentChangePasswordBinding
     private lateinit var loadingDialog: Dialog
-    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,8 +30,8 @@ class ChangePasswordFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = FragmentChangePasswordBinding.inflate(inflater, container, false)
 
-        // Initialize DatabaseHelper
-        dbHelper = DatabaseHelper(requireContext())
+        // Initialize Firebase Database reference
+        database = FirebaseDatabase.getInstance().reference
 
         // Set up loading dialog
         setupLoadingDialog()
@@ -40,7 +42,7 @@ class ChangePasswordFragment : Fragment() {
             .map { password -> password.isEmpty() || password.length < 6 }
         currentPasswordStream.subscribe { showTextMinimalAlert(it, "Current Password") }
 
-         // New Password Validation
+        // New Password Validation
         val newPasswordStream = RxTextView.textChanges(binding.etNewpassword)
             .skipInitialValue()
             .map { password -> password.isEmpty() || password.length < 6 }
@@ -51,8 +53,6 @@ class ChangePasswordFragment : Fragment() {
             .skipInitialValue()
             .map { password -> password.toString() != binding.etNewpassword.text.toString() }
         confirmNewPasswordStream.subscribe { showTextMinimalAlert(it, "Confirm New Password") }
-
-
 
         // Button Enable True or False
         val invalidFieldStream = Observable.combineLatest(
@@ -78,31 +78,36 @@ class ChangePasswordFragment : Fragment() {
             val currentPassword = binding.etCurrentpassword.text.toString()
             val newPassword = binding.etNewpassword.text.toString()
 
-            // Retrieve current username from SharedPreferences
+            // Retrieve the current userId from SharedPreferences
             val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val currentUsername = sharedPreferences.getString("username", "") ?: ""
+            val currentUserId = sharedPreferences.getString("loggedInUserId", "") ?: ""
 
             // Check if the current password is correct for the logged-in user
-            if (dbHelper.checkUserCredentials(currentUsername, currentPassword)) {
-                // Update the password in the database
-                val updateSuccess = dbHelper.updatePassword(currentUsername, newPassword)
+            val userRef = database.child("users").child(currentUserId)
+            userRef.child("password").get().addOnSuccessListener { snapshot ->
+                val storedPassword = snapshot.getValue(String::class.java)
 
-                // Dismiss the loading dialog after a delay
-                Handler(Looper.getMainLooper()).postDelayed({
-                    loadingDialog.dismiss()
+                if (storedPassword == currentPassword) {
+                    // Update the password in the database
+                    userRef.child("password").setValue(newPassword).addOnCompleteListener { task ->
+                        // Dismiss loading dialog after a delay
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            loadingDialog.dismiss()
 
-                    if (updateSuccess) {
-                        Toast.makeText(requireContext(), "Password updated successfully!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to update password.", Toast.LENGTH_SHORT).show()
+                            if (task.isSuccessful) {
+                                Toast.makeText(requireContext(), "Password updated successfully!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to update password.", Toast.LENGTH_SHORT).show()
+                            }
+                        }, 2000) // 2-second delay
                     }
-                }, 2000) // 2-second delay
-            } else {
-                // Dismiss the loading dialog after a delay
-                Handler(Looper.getMainLooper()).postDelayed({
-                    loadingDialog.dismiss()
-                    Toast.makeText(requireContext(), "Incorrect current password.", Toast.LENGTH_SHORT).show()
-                }, 2000) // 2-second delay
+                } else {
+                    // Dismiss the loading dialog after a delay
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        loadingDialog.dismiss()
+                        Toast.makeText(requireContext(), "Incorrect current password.", Toast.LENGTH_SHORT).show()
+                    }, 2000) // 2-second delay
+                }
             }
         }
 
@@ -131,6 +136,5 @@ class ChangePasswordFragment : Fragment() {
             }
         }
     }
-
-
 }
+
