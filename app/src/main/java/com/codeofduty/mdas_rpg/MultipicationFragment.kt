@@ -49,7 +49,7 @@ class MultipicationFragment : Fragment() {
             // Start the Medium activity
             val intent = Intent(requireContext(), MediumMultiplication::class.java)
             intent.putExtra("operation_difficulty", "Multiply/Medium")  // Pass difficulty level
-            Toast.makeText(requireContext(), "Goodluck: $game_username !", Toast.LENGTH_SHORT).show()
+            intent.putExtra("game_username", game_username)  // Pass the logged-in username
 
             startActivity(intent)
         }
@@ -66,7 +66,7 @@ class MultipicationFragment : Fragment() {
             // Start the Hard activity
             val intent = Intent(requireContext(), HardMultiplication::class.java)
             intent.putExtra("operation_difficulty", "Multiply/Hard")  // Pass difficulty level
-            Toast.makeText(requireContext(), "Goodluck: $game_username !", Toast.LENGTH_SHORT).show()
+            intent.putExtra("game_username", game_username)  // Pass the logged-in username
 
             startActivity(intent)
         }

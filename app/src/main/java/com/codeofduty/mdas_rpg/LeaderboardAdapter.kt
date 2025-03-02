@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class LeaderboardAdapter(private val leaderboardItems: List<LeaderboardItem>) :
+class LeaderboardAdapter(private val leaderboardItems: List<LeaderboardItemFIrebase>) :
     RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {
 
     class LeaderboardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,9 +23,9 @@ class LeaderboardAdapter(private val leaderboardItems: List<LeaderboardItem>) :
 
     override fun onBindViewHolder(holder: LeaderboardViewHolder, position: Int) {
         val item = leaderboardItems[position]
-        holder.name.text = item.name
-        holder.difficulty.text = item.difficulty
-        holder.totalScore.text = item.totalScore
+        holder.name.text = item.game_username
+        holder.difficulty.text = item.operation_difficulty
+        holder.totalScore.text = item.score.toString()
     }
 
     override fun getItemCount(): Int {
