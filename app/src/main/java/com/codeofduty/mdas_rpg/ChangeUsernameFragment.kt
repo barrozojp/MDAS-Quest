@@ -15,8 +15,11 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import androidx.fragment.app.Fragment
 import com.codeofduty.mdas_rpg.databinding.FragmentChangeUsernameBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 @SuppressLint("CheckResult")
 class ChangeUsernameFragment : Fragment() {
@@ -69,7 +72,6 @@ class ChangeUsernameFragment : Fragment() {
                 ContextCompat.getColorStateList(requireContext(), if (isValid) R.color.enabled_button_color else android.R.color.darker_gray)
         }
 
-        // Save Changes button click event
 // Save Changes button click event
         binding.btnSavechanges.setOnClickListener {
             // Show loading dialog
@@ -88,7 +90,7 @@ class ChangeUsernameFragment : Fragment() {
                 val existingPassword = snapshot.child("password").value.toString()
 
                 if (existingPassword == password) {
-                    // Update the username in Firebase
+                    // Update the username in Firebase users
                     userRef.child("username").setValue(newUsername).addOnCompleteListener { task ->
                         Handler(Looper.getMainLooper()).postDelayed({
                             loadingDialog.dismiss()
@@ -101,6 +103,9 @@ class ChangeUsernameFragment : Fragment() {
 
                                 // Update notes in Firebase if note_user matches currentUsername
                                 updateNotesUsername(currentUsername, newUsername)
+
+                                // Update game_username in game_table if game_username matches current username
+                                updateGameUsername(currentUsername, newUsername)
 
                                 // Restart the fragment
                                 restartFragment()
@@ -118,8 +123,33 @@ class ChangeUsernameFragment : Fragment() {
                 }
             }
         }
-
         return binding.root
+    }
+
+    private fun updateGameUsername(currentUsername: String, newUsername: String) {
+        // Get reference to the game_table
+        val gameTableRef = database.child("game_table")
+
+        // Query to find all games where game_username matches currentUsername
+        gameTableRef.orderByChild("game_username").equalTo(currentUsername).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (gameSnapshot in snapshot.children) {
+                    // Update the game_username for each matching entry
+                    gameSnapshot.ref.child("game_username").setValue(newUsername).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(requireContext(), "Game username updated successfully!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), "Failed to update game username.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), "Failed to update game username.", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     // Function to update note_user in the allnotes table

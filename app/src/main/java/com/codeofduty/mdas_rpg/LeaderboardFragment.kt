@@ -46,12 +46,16 @@ class LeaderboardFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 leaderboardItems.clear()
 
+                // Iterate through the snapshot to get leaderboard items
                 for (dataSnapshot in snapshot.children) {
                     val leaderboardItem = dataSnapshot.getValue(LeaderboardItemFIrebase::class.java)
                     leaderboardItem?.let {
                         leaderboardItems.add(it)
                     }
                 }
+
+                // Sort the leaderboardItems in descending order of scores
+                leaderboardItems.sortByDescending { it.score }
 
                 // Check if leaderboard is empty
                 if (leaderboardItems.isEmpty()) {
