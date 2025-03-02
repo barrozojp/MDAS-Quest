@@ -20,6 +20,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.codeofduty.mdas_rpg.databinding.ActivityEasyDivisionBinding
+import com.google.firebase.database.FirebaseDatabase
 import com.jakewharton.rxbinding2.widget.RxTextView
 import kotlin.random.Random
 
@@ -43,6 +44,8 @@ class EasyDivision : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var operationDifficulty: String
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var game_username: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +58,9 @@ class EasyDivision : AppCompatActivity() {
 
         // Get the passed operation difficulty
         operationDifficulty = intent.getStringExtra("operation_difficulty") ?: "Unknown"
+
+        game_username = intent.getStringExtra("game_username") ?: "Unknown"
+
 
 
         // Load preferences
@@ -263,23 +269,15 @@ class EasyDivision : AppCompatActivity() {
         // Stop the timer
         handler.removeCallbacks(runnable)
 
-        // Retrieve the username from SharedPreferences
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE) // Use the correct SharedPreferences
-        val username = sharedPreferences.getString("username", "") ?: ""
 
-
-        // Insert the game record into the database using the username
-        val isInserted = databaseHelper.insertGameRecord(username, operationDifficulty, score)
+        // Save the game record to Firebase
+        saveGameRecordToFirebase(game_username, operationDifficulty, score)
 
         // Inflate the custom layout for the game over dialog
         val dialogView = layoutInflater.inflate(R.layout.dialog_gameover, null)
         val totalScoreTextView = dialogView.findViewById<TextView>(R.id.dialog_totalScore)
 
         totalScoreTextView.text = "Total Score: $score"
-
-        if (!isInserted) {
-            totalScoreTextView.text = "Error saving score"
-        }
 
         // Show the dialog
         val dialog = AlertDialog.Builder(this)
@@ -300,6 +298,22 @@ class EasyDivision : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun saveGameRecordToFirebase(game_username: String, operationDifficulty: String, score: Int) {
+        val database = FirebaseDatabase.getInstance().reference
+        val gameId = database.child("game_table").push().key // Generate unique game ID
+        if (gameId != null) {
+            val gameRecord = GameRecord(gameId, game_username, operationDifficulty, score)
+
+            // Save the game record under the unique gameId in the "game_table" node
+            database.child("game_table").child(gameId).setValue(gameRecord)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                    } else {
+                    }
+                }
+        }
     }
 
     private fun restartGame() {

@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 
 class DivisionFragment : Fragment() {
@@ -21,27 +23,54 @@ class DivisionFragment : Fragment() {
         // Set up the button click to launch EASY activity
         val btnEasy = view.findViewById<Button>(R.id.btn_easy)
         btnEasy.setOnClickListener {
+            // Get the logged-in username from SharedPreferences
+            val game_username = requireActivity().getSharedPreferences("MyAppPrefs", AppCompatActivity.MODE_PRIVATE)
+                .getString("username", "") ?: ""  // Default to empty if not found
+
+            // Show a toast with the game username to verify it's being retrieved
+            Toast.makeText(requireContext(), "Goodluck: $game_username !", Toast.LENGTH_SHORT).show()
+
             // Start the EasyMultiplication activity
             val intent = Intent(requireContext(), EasyDivision::class.java)
             intent.putExtra("operation_difficulty", "Divide/Easy")  // Pass difficulty level
+            intent.putExtra("game_username", game_username)  // Pass the logged-in username
+
             startActivity(intent)
         }
 
         // Set up the button click to launch MEDIUM
         val btnMedium = view.findViewById<Button>(R.id.btn_medium)
         btnMedium.setOnClickListener {
+            // Get the logged-in username from SharedPreferences
+            val game_username = requireActivity().getSharedPreferences("MyAppPrefs", AppCompatActivity.MODE_PRIVATE)
+                .getString("username", "") ?: ""  // Default to empty if not found
+
+            // Show a toast with the game username to verify it's being retrieved
+            Toast.makeText(requireContext(), "Goodluck: $game_username !", Toast.LENGTH_SHORT).show()
+
             // Start the Medium activity
             val intent = Intent(requireContext(), MediumDivision::class.java)
             intent.putExtra("operation_difficulty", "Divide/Medium")  // Pass difficulty level
+            intent.putExtra("game_username", game_username)  // Pass the logged-in username
+
             startActivity(intent)
         }
 
         // Set up the button click to launch MEDIUM
         val btnHard = view.findViewById<Button>(R.id.btn_hard)
         btnHard.setOnClickListener {
+            // Get the logged-in username from SharedPreferences
+            val game_username = requireActivity().getSharedPreferences("MyAppPrefs", AppCompatActivity.MODE_PRIVATE)
+                .getString("username", "") ?: ""  // Default to empty if not found
+
+            // Show a toast with the game username to verify it's being retrieved
+            Toast.makeText(requireContext(), "Goodluck: $game_username !", Toast.LENGTH_SHORT).show()
+
             // Start the Hard activity
             val intent = Intent(requireContext(), HardDivision::class.java)
             intent.putExtra("operation_difficulty", "Divide/Hard")  // Pass difficulty level
+            intent.putExtra("game_username", game_username)  // Pass the logged-in username
+
             startActivity(intent)
         }
 
