@@ -70,6 +70,7 @@ class ChangeUsernameFragment : Fragment() {
         }
 
         // Save Changes button click event
+// Save Changes button click event
         binding.btnSavechanges.setOnClickListener {
             // Show loading dialog
             loadingDialog.show()
@@ -98,6 +99,9 @@ class ChangeUsernameFragment : Fragment() {
                                 binding.tvUsername.text = newUsername // Update displayed username
                                 Toast.makeText(requireContext(), "Username updated successfully!", Toast.LENGTH_SHORT).show()
 
+                                // Update notes in Firebase if note_user matches currentUsername
+                                updateNotesUsername(currentUsername, newUsername)
+
                                 // Restart the fragment
                                 restartFragment()
                             } else {
@@ -116,6 +120,34 @@ class ChangeUsernameFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    // Function to update note_user in the allnotes table
+    private fun updateNotesUsername(currentUsername: String, newUsername: String) {
+        val notesRef = database.child("allnotes")
+        notesRef.orderByChild("note_user").equalTo(currentUsername).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // Debug: Found notes for currentUsername
+                Toast.makeText(requireContext(), "Found notes for $currentUsername", Toast.LENGTH_SHORT).show()
+                for (noteSnapshot in snapshot.children) {
+                    noteSnapshot.ref.child("note_user").setValue(newUsername).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // Debug: Successfully updated note_user for note
+                            Toast.makeText(requireContext(), "Note updated with new username", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Debug: Failed to update note_user for a note
+                            Toast.makeText(requireContext(), "Failed to update note_user for note", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } else {
+                // Debug: No notes found for currentUsername
+                Toast.makeText(requireContext(), "No notes found for $currentUsername", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { exception ->
+            // Debug: Firebase read failure
+            Toast.makeText(requireContext(), "Failed to fetch notes: ${exception.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // Function to set up the loading dialog
