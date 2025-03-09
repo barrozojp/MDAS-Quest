@@ -62,4 +62,7 @@ dependencies {
     implementation("com.airbnb.android:lottie:5.2.0")
     //RECYCLER VIEW
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+
 }
