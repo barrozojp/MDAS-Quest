@@ -145,4 +145,16 @@ class LoginVerification : AppCompatActivity() {
             Toast.makeText(this, "Invalid OTP! Try again.", Toast.LENGTH_LONG).show()
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        logoutUser()
+    }
+
+    private fun logoutUser() {
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        sharedPreferences.edit().remove("loggedInUserId").apply()
+        sharedPreferences.edit().remove("username").apply()
+    }
+
 }
