@@ -121,8 +121,12 @@ class LoginActivity : AppCompatActivity() {
                             dbHelper.insertUser(username, password)
                         }
 
-                        startActivity(Intent(this, LoginVerification::class.java))
-                        finish()
+                        val intent = Intent(this, LoginVerification::class.java)
+                        intent.putExtra("username", username)
+                        intent.putExtra("loggedInUserId", userId)
+                        startActivity(intent)
+
+
                     } else {
                         Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
                     }

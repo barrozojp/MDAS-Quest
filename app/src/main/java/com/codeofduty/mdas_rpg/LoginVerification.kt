@@ -25,14 +25,15 @@ class LoginVerification : AppCompatActivity() {
         binding = ActivityLoginVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val userId = sharedPreferences.getString("loggedInUserId", null)
+        val username = intent.getStringExtra("username")
+        val userId = intent.getStringExtra("loggedInUserId")
 
         if (!userId.isNullOrEmpty()) {
             getUserPhoneNumber(userId)
         } else {
             Toast.makeText(this, "User ID not found!", Toast.LENGTH_LONG).show()
         }
+
 
         // Enable btn_verify only when OTP is entered
         binding.etOtp.addTextChangedListener(object : TextWatcher {
@@ -78,7 +79,7 @@ class LoginVerification : AppCompatActivity() {
         generatedOtp = (100000..999999).random().toString()
 
         val twilioAccountSid = "AC8ae89366d521d6d8a8f8aa69b4fb5ded"
-        val twilioAuthToken = "d7e6856a6bd1fc62dd3a2a2b4a3540b2"
+        val twilioAuthToken = "Replaced with actual Token"
         val messagingServiceSid = "MGbc9add2e524ba0b26c81b3eaeed5260c"
 
         val client = OkHttpClient()
@@ -139,8 +140,15 @@ class LoginVerification : AppCompatActivity() {
         val enteredOtp = binding.etOtp.text.toString()
 
         if (enteredOtp == generatedOtp) {
+            val username = intent.getStringExtra("username")
+            val loggedInUserId = intent.getStringExtra("loggedInUserId")
+
             Toast.makeText(this, "OTP Verified. Logging in...", Toast.LENGTH_LONG).show()
-            val intent = Intent(this, MainActivity::class.java)
+
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("loggedInUserId", loggedInUserId)
+                putExtra("username", username)
+            }
             startActivity(intent)
             finish()
         } else {
@@ -150,7 +158,6 @@ class LoginVerification : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        logoutUser()
     }
 
     private fun logoutUser() {
