@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1057138845838",
+    "project_id": "mdas-quest-cf08c",
+    "storage_bucket": "mdas-quest-cf08c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057138845838:android:fea732df432e032307c1df",
+        "android_client_info": {
+          "package_name": "com.codeofduty.mdas_rpg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4BnfHlaJwIXqs-E6ya3BrXnBH79d-1sU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
