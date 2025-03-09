@@ -65,6 +65,15 @@ class RegisterActivity : AppCompatActivity() {
             .map { username -> username.isEmpty() || username.length < 6 } // Add length check
         usernameStream.subscribe { showTextMinimalAlert(it, "Username") }
 
+        // Phone Number Validation (must be 11 digits and start with '09')
+        val phoneStream = RxTextView.textChanges(binding.etPhoneNum)
+            .skipInitialValue()
+            .map { phone ->
+                phone.length != 11 || !phone.toString().startsWith("09")
+            }
+        phoneStream.subscribe { showTextMinimalAlert(it, "Phone Number") }
+
+
         // Password Validation (minimum 6 characters)
         val passwordStream = RxTextView.textChanges(binding.etPassword)
             .skipInitialValue()
@@ -82,9 +91,11 @@ class RegisterActivity : AppCompatActivity() {
             usernameStream,
             passwordStream,
             confirmPasswordStream,
-            { usernameInvalid: Boolean, passwordInvalid: Boolean, confirmPasswordInvalid: Boolean ->
-                !usernameInvalid && !passwordInvalid && !confirmPasswordInvalid
-            })
+            phoneStream, // Include phone number validation
+            { usernameInvalid, passwordInvalid, confirmPasswordInvalid, phoneInvalid ->
+                !usernameInvalid && !passwordInvalid && !confirmPasswordInvalid && !phoneInvalid
+            }
+        )
         invalidFieldStream.subscribe { isValid ->
             binding.btnLogin.isEnabled = isValid
             binding.btnLogin.backgroundTintList =
@@ -97,25 +108,36 @@ class RegisterActivity : AppCompatActivity() {
 
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
+            val phoneNumber = binding.etPhoneNum.text.toString()
 
             database.child("users").get()
                 .addOnSuccessListener { dataSnapshot ->
                     var usernameExists = false
+                    var phoneExists = false
 
                     for (userSnapshot in dataSnapshot.children) {
                         val existingUsername = userSnapshot.child("username").value.toString()
+                        val existingPhone = userSnapshot.child("phone").value.toString()
+
                         if (existingUsername == username) {
                             usernameExists = true
+                            break
+                        }
+                        if (existingPhone == phoneNumber) {
+                            phoneExists = true
                             break
                         }
                     }
 
                     if (usernameExists) {
-                        Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Username already exists!", Toast.LENGTH_SHORT).show()
+                        loadingDialog.dismiss()
+                    } else if (phoneExists) {
+                        Toast.makeText(this, "Phone number already in use!", Toast.LENGTH_SHORT).show()
                         loadingDialog.dismiss()
                     } else {
                         if (dbHelper.checkUserExists(username)) {
-                            Toast.makeText(this, "User already exists!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Username already exists!", Toast.LENGTH_SHORT).show()
                             loadingDialog.dismiss()
                         } else {
                             val userId = database.child("users").push().key
@@ -124,7 +146,8 @@ class RegisterActivity : AppCompatActivity() {
                                 val userMap = hashMapOf(
                                     "userId" to userId,
                                     "username" to username,
-                                    "password" to password
+                                    "password" to password,
+                                    "phone" to phoneNumber
                                 )
 
                                 database.child("users").child(userId).setValue(userMap)
@@ -184,6 +207,7 @@ class RegisterActivity : AppCompatActivity() {
                 if (binding.etConfpassword.text?.isEmpty() == true) "$text cannot be empty!"
                 else "$text must match Password!"
             } else null
+            "Phone Number" -> binding.etPhoneNum.error = if (isNotValid) "Phone number must be 11 digits and start with '09'!" else null
         }
     }
 }

@@ -61,6 +61,30 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/phone_num"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="15dp"
+            android:hint="Phone Number (09*********)"
+            android:textColorHint="#003777"
+            style="@style/TextInputEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_username"
+            app:startIconDrawable="@drawable/baseline_phone_24"
+            app:startIconTint="#6684D8">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_phone_num"
+                android:layout_width="match_parent"
+                android:paddingStart="50dp"
+                android:layout_height="80dp"
+                android:inputType="phone"
+                style="@style/TextInputEditText"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password"
             android:layout_width="match_parent"
             android:layout_height="80dp"
@@ -69,7 +93,7 @@
             android:textColorHint="#003777"
             style="@style/TextInputEditText"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/til_username"
+            app:layout_constraintTop_toBottomOf="@+id/phone_num"
             app:startIconDrawable="@drawable/baseline_lock_24"
             app:startIconTint="#FF0606">
 
