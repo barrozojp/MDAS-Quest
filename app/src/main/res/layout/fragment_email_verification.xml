@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_design"
+    tools:context=".EmailVerification">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/rounded_dialog_bg"
+        android:layout_gravity="center">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/anim_verification"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_alignParentTop="true"
+            android:visibility="visible"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/email_animation" />
+
+        <TextView
+            android:id="@+id/tv_verify_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="Verification"
+            android:layout_below="@id/anim_verification"
+            android:fontFamily="@font/bosse"
+            android:textColor="#003777"
+            android:textAlignment="center"
+            android:textSize="25sp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_otp"
+            style="@style/TextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:layout_below="@+id/tv_verify_msg"
+            android:hint="Verification Code sent to Your email"
+            android:textColorHint="#003777"
+            app:startIconDrawable="@drawable/baseline_account_circle_24"
+            app:startIconTint="#6684D8">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_otp"
+                style="@style/TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:inputType="number"
+                android:paddingStart="50dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_verify"
+            style="@style/ButtonColor3"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:layout_below="@+id/til_otp"
+            android:layout_marginBottom="15dp"
+            android:fontFamily="@font/bosse"
+            android:text="Verify"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/cancel_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:text="Cancel"
+            android:textColor="#003777"
+            android:textSize="20sp"
+            android:fontFamily="@font/bosse"
+            android:layout_below="@id/btn_verify"
+            android:textAlignment="center" />
+
+    </RelativeLayout>
+</FrameLayout>

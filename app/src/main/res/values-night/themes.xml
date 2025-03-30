@@ -31,4 +31,13 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="ButtonColor4">
+        <item name="android:background">@drawable/gradient_green</item>
+        <item name="backgroundTint">#68F3A2</item>
+        <item name="android:enabled">false</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

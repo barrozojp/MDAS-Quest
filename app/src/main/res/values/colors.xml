@@ -3,4 +3,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="enabled_button_color">#6CC2DC</color>
+    <color name="disabled_button_color">#7A7A7A</color>
+
 </resources>
