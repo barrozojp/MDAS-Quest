@@ -7,18 +7,15 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.codeofduty.mdas_rpg.R
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-
 import com.codeofduty.mdas_rpg.databinding.ActivityRegisterBinding
 import com.jakewharton.rxbinding2.widget.RxTextView
+import android.util.Patterns
 
 @SuppressLint("CheckResult")
 class RegisterActivity : AppCompatActivity() {
@@ -86,14 +83,19 @@ class RegisterActivity : AppCompatActivity() {
             .map { confirmPassword -> confirmPassword.isEmpty() || confirmPassword.toString() != binding.etPassword.text.toString() }
         confirmPasswordStream.subscribe { showTextMinimalAlert(it, "Confirm Password") }
 
-        // Button Enable True or False
+        val emailStream = RxTextView.textChanges(binding.etEmail)
+            .skipInitialValue()
+            .map { it.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(it).matches() }
+        emailStream.subscribe { showTextMinimalAlert(it, "Email") }
+
         val invalidFieldStream = io.reactivex.Observable.combineLatest(
             usernameStream,
             passwordStream,
             confirmPasswordStream,
-            phoneStream, // Include phone number validation
-            { usernameInvalid, passwordInvalid, confirmPasswordInvalid, phoneInvalid ->
-                !usernameInvalid && !passwordInvalid && !confirmPasswordInvalid && !phoneInvalid
+            phoneStream,
+            emailStream,
+            { usernameInvalid, passwordInvalid, confirmPasswordInvalid, phoneInvalid, emailInvalid ->
+                !usernameInvalid && !passwordInvalid && !confirmPasswordInvalid && !phoneInvalid && !emailInvalid
             }
         )
         invalidFieldStream.subscribe { isValid ->
@@ -109,15 +111,18 @@ class RegisterActivity : AppCompatActivity() {
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
             val phoneNumber = binding.etPhoneNum.text.toString()
+            val email = binding.etEmail.text.toString()
 
             database.child("users").get()
                 .addOnSuccessListener { dataSnapshot ->
                     var usernameExists = false
                     var phoneExists = false
+                    var emailExists = false
 
                     for (userSnapshot in dataSnapshot.children) {
                         val existingUsername = userSnapshot.child("username").value.toString()
                         val existingPhone = userSnapshot.child("phone").value.toString()
+                        val existingEmail = userSnapshot.child("email").value.toString()
 
                         if (existingUsername == username) {
                             usernameExists = true
@@ -127,6 +132,10 @@ class RegisterActivity : AppCompatActivity() {
                             phoneExists = true
                             break
                         }
+                        if (existingEmail == email) {
+                            emailExists = true
+                            break
+                        }
                     }
 
                     if (usernameExists) {
@@ -134,6 +143,9 @@ class RegisterActivity : AppCompatActivity() {
                         loadingDialog.dismiss()
                     } else if (phoneExists) {
                         Toast.makeText(this, "Phone number already in use!", Toast.LENGTH_SHORT).show()
+                        loadingDialog.dismiss()
+                    } else if (emailExists) {
+                        Toast.makeText(this, "Email already in use!", Toast.LENGTH_SHORT).show()
                         loadingDialog.dismiss()
                     } else {
                         if (dbHelper.checkUserExists(username)) {
@@ -147,7 +159,8 @@ class RegisterActivity : AppCompatActivity() {
                                     "userId" to userId,
                                     "username" to username,
                                     "password" to password,
-                                    "phone" to phoneNumber
+                                    "phone" to phoneNumber,
+                                    "email" to email
                                 )
 
                                 database.child("users").child(userId).setValue(userMap)
@@ -177,7 +190,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         binding.backTv.setOnClickListener {
-            finish() // or implement any navigation logic if needed
+            finish()
         }
     }
 
@@ -208,6 +221,7 @@ class RegisterActivity : AppCompatActivity() {
                 else "$text must match Password!"
             } else null
             "Phone Number" -> binding.etPhoneNum.error = if (isNotValid) "Phone number must be 11 digits and start with '09'!" else null
+            "Email" -> binding.etEmail.error = if (isNotValid) "Enter a valid email address!" else null
         }
     }
 }

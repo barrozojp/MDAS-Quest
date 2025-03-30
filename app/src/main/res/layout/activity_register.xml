@@ -130,6 +130,30 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="15dp"
+            android:textColorHint="#003777"
+            android:hint="Email"
+            style="@style/TextInputEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/conf_password"
+            app:startIconDrawable="@drawable/baseline_account_circle_24"
+            app:startIconTint="#205E95">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_email"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:paddingStart="50dp"
+                android:inputType="textEmailAddress"
+                style="@style/TextInputEditText"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_login"
             style="@style/ButtonColor3"
@@ -143,7 +167,7 @@
             app:layout_constraintBottom_toTopOf="@+id/back_tv"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/conf_password" />
+            app:layout_constraintTop_toBottomOf="@+id/email" />
 
         <TextView
             android:id="@+id/back_tv"
