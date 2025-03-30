@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:background="@drawable/background_design"
     android:layout_height="match_parent"
-    tools:context=".LoginVerification">
+    tools:context=".WhatsappVerification">
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/anim_verification"
@@ -16,7 +16,7 @@
         android:visibility="visible"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/login_verification_anim" />
+        app:lottie_rawRes="@raw/whatsapp_anim" />
 
     <TextView
         android:id="@+id/tv_verify_msg"
@@ -74,10 +74,10 @@
         app:layout_constraintTop_toBottomOf="@+id/til_otp" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/whatsappbtn"
+        android:id="@+id/smsbtn"
         android:background="@drawable/gradient_green"
         android:layout_width="wrap_content"
-        android:text="Get OTP via Whatsapp"
+        android:text="Get OTP via SMS"
         android:fontFamily="@font/bosse"
         android:textSize="20sp"
         android:layout_marginTop="30dp"
@@ -99,7 +99,7 @@
         android:textColor="#003777"
         android:textSize="20sp"
         android:fontFamily="@font/bosse"
-        android:layout_below="@id/whatsappbtn"
+        android:layout_below="@id/smsbtn"
         android:textAlignment="center"/>
 
 

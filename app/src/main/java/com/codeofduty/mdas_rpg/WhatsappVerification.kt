@@ -7,39 +7,38 @@ import android.text.TextWatcher
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.codeofduty.mdas_rpg.databinding.ActivityLoginVerificationBinding
+import com.codeofduty.mdas_rpg.databinding.ActivityWhatsappVerificationBinding
+import com.google.firebase.database.*
 import okhttp3.*
 import java.io.IOException
-import com.google.firebase.database.*
 
-class LoginVerification : AppCompatActivity() {
+class WhatsappVerification : AppCompatActivity() {
 
-    private lateinit var binding: ActivityLoginVerificationBinding
+    private lateinit var binding: ActivityWhatsappVerificationBinding
     private lateinit var userPhoneNumber: String
     private var generatedOtp: String = ""
-    private lateinit var databaseReference: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginVerificationBinding.inflate(layoutInflater)
+        binding = ActivityWhatsappVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val username = intent.getStringExtra("username")
-        val userId = intent.getStringExtra("loggedInUserId")
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val userPhone = sharedPreferences.getString("user_phone", "")
 
-        if (!userId.isNullOrEmpty()) {
-            getUserPhoneNumber(userId)
+        if (!userPhone.isNullOrEmpty()) {
+            userPhoneNumber = userPhone
+            sendWhatsappOtp(userPhoneNumber)
         } else {
-            Toast.makeText(this, "User ID not found!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Phone number not found!", Toast.LENGTH_LONG).show()
         }
-
 
         binding.etOtp.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val isValid = s?.length == 6
                 binding.btnVerify.isEnabled = isValid
                 binding.btnVerify.backgroundTintList = ContextCompat.getColorStateList(
-                    this@LoginVerification,
+                    this@WhatsappVerification,
                     if (isValid) R.color.enabled_button_color else android.R.color.darker_gray
                 )
             }
@@ -48,18 +47,18 @@ class LoginVerification : AppCompatActivity() {
         })
 
         binding.cancelTv.setOnClickListener {
-            cancelLogin()
+            cancelVerification()
         }
 
         binding.btnVerify.setOnClickListener {
             verifyOtp()
         }
 
-        binding.whatsappbtn.setOnClickListener {
+        binding.smsbtn.setOnClickListener {
             val username = intent.getStringExtra("username")
             val loggedInUserId = intent.getStringExtra("loggedInUserId")
 
-            val intent = Intent(this, WhatsappVerification::class.java).apply {
+            val intent = Intent(this, LoginVerification::class.java).apply {
                 putExtra("loggedInUserId", loggedInUserId)
                 putExtra("username", username)
                 putExtra("userPhoneNumber", userPhoneNumber)
@@ -67,33 +66,28 @@ class LoginVerification : AppCompatActivity() {
             startActivity(intent)
         }
 
-    }
-    private fun cancelLogin() {
-        // Clear SharedPreferences to log out the user
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().clear().apply()
 
-        // Navigate back to the LoginRegister activity
+    }
+
+    private fun cancelVerification() {
         val intent = Intent(this, LoginRegister::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
 
-    private fun sendOtp(phone: String) {
+    private fun sendWhatsappOtp(phone: String) {
         val formattedPhone = if (phone.startsWith("+63")) phone else "+63" + phone.removePrefix("0")
         generatedOtp = (100000..999999).random().toString()
 
         val twilioAccountSid = "AC8ae89366d521d6d8a8f8aa69b4fb5ded"
         val twilioAuthToken = "Replaced with actual Token"
-        val messagingServiceSid = "MGbc9add2e524ba0b26c81b3eaeed5260c"
-
         val client = OkHttpClient()
 
         val requestBody = FormBody.Builder()
-            .add("To", formattedPhone)
-            .add("MessagingServiceSid", messagingServiceSid)
-            .add("Body", "Your OTP for login verification is: $generatedOtp")
+            .add("To", "whatsapp:$formattedPhone")
+            .add("From", "whatsapp:+14155238886")
+            .add("Body", "Your WhatsApp OTP is: $generatedOtp")
             .build()
 
         val request = Request.Builder()
@@ -112,37 +106,13 @@ class LoginVerification : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 runOnUiThread {
                     if (response.isSuccessful) {
-                        Toast.makeText(applicationContext, "OTP Sent to $formattedPhone", Toast.LENGTH_LONG).show()
+                        Toast.makeText(applicationContext, "OTP Sent via WhatsApp", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(applicationContext, "OTP Sending Failed: ${response.code} - ${response.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
-
-
         })
-    }
-
-
-    private fun getUserPhoneNumber(userId: String) {
-        databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId)
-
-        databaseReference.get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                userPhoneNumber = snapshot.child("phone").value.toString()
-                Toast.makeText(this, "User Phone: $userPhoneNumber", Toast.LENGTH_LONG).show()
-
-                // Save phone number to SharedPreferences
-                val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                sharedPreferences.edit().putString("user_phone", userPhoneNumber).apply()
-
-                sendOtp(userPhoneNumber)
-            } else {
-                Toast.makeText(this, "Phone number not found!", Toast.LENGTH_LONG).show()
-            }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to get phone number!", Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun verifyOtp() {
@@ -164,15 +134,4 @@ class LoginVerification : AppCompatActivity() {
             Toast.makeText(this, "Invalid OTP! Try again.", Toast.LENGTH_LONG).show()
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    private fun logoutUser() {
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().remove("loggedInUserId").apply()
-        sharedPreferences.edit().remove("username").apply()
-    }
-
 }
