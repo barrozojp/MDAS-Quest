@@ -81,7 +81,7 @@ class WhatsappVerification : AppCompatActivity() {
         generatedOtp = (100000..999999).random().toString()
 
         val twilioAccountSid = "AC8ae89366d521d6d8a8f8aa69b4fb5ded"
-        val twilioAuthToken = "9f53f51f662f2e80f30d49d02c34ecb5"
+        val twilioAuthToken = "PLACEHOLDER MUNA"
         val client = OkHttpClient()
 
         val requestBody = FormBody.Builder()
